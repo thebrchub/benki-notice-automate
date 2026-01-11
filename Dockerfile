@@ -9,7 +9,7 @@ WORKDIR /notice-app
 RUN apk add --no-cache git
 
 # Copy only go mod files first (cache-friendly)
-COPY backend/go.mod backend/go.sum ./
+COPY backend/go.mod ./
 
 # Download dependencies (cached if unchanged)
 RUN go mod download
@@ -38,3 +38,4 @@ EXPOSE 2028
 
 # Run
 CMD ["/notice-app/app"]
+
