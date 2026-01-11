@@ -58,7 +58,7 @@ func main() {
 
 		// Only process HTML
 		ct := resp.Header.Get("Content-Type")
-		fmt.Println("content type : " + ct)
+		// fmt.Println("content type : " + ct)
 		if !strings.Contains(ct, "text/html") {
 			return nil
 		}
