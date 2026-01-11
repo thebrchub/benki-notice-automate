@@ -29,18 +29,19 @@ func main() {
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
 		req.Host = target.Host
-		req.URL.Path = strings.TrimPrefix(req.URL.Path, "/itat")
+		if found := req.Header.Get("Accept-Encoding"); found != "" {
+			req.Header.Set("Accept-Encoding", "gzip")
+		}
 
-		// Only for captcha, set headers and forward cookies manually
+		req.URL.Path = strings.TrimPrefix(req.URL.Path, "/api/proxy/itat")
+		if req.URL.Path == "" {
+			req.URL.Path = "/"
+		}
+
 		if strings.HasPrefix(req.URL.Path, "/captcha") {
 			req.Header.Set("Referer", "https://itat.gov.in/judicial/tribunalorders/itat")
 			req.Header.Set("Origin", "https://itat.gov.in")
 			req.Header.Set("Host", "itat.gov.in")
-
-			// Forward all cookies from browser
-			if cookieHeader := req.Header.Get("Cookie"); cookieHeader != "" {
-				req.Header.Set("Cookie", cookieHeader)
-			}
 		}
 	}
 
@@ -48,16 +49,10 @@ func main() {
 		//  Rewrite redirects
 		if loc := resp.Header.Get("Location"); loc != "" {
 			if after, ok := strings.CutPrefix(loc, "https://itat.gov.in"); ok {
-				resp.Header.Set(
-					"Location",
-					"/itat"+after,
-				)
+				resp.Header.Set("Location", "/api/proxy/itat"+after)
 			}
-			if after, ok := strings.CutPrefix(loc, "//itat.gov.in"); ok { // protocol-relative
-				resp.Header.Set(
-					"Location",
-					"/itat"+after,
-				)
+			if after, ok := strings.CutPrefix(loc, "//itat.gov.in"); ok {
+				resp.Header.Set("Location", "/api/proxy/itat"+after)
 			}
 		}
 
@@ -100,9 +95,12 @@ func main() {
 		html := string(body)
 
 		//  Rewrite absolute and protocol-relative URLs
-		html = strings.ReplaceAll(html, "https://itat.gov.in", DOMAIN+"/itat")
-		after, _ := strings.CutPrefix(DOMAIN, "https:")
-		html = strings.ReplaceAll(html, "//itat.gov.in", after+"/itat")
+		domain := strings.TrimSuffix(DOMAIN, "/")
+		domainNoProto := strings.TrimPrefix(domain, "https:")
+		domainNoProto = strings.TrimPrefix(domainNoProto, "http:")
+
+		html = strings.ReplaceAll(html, "https://itat.gov.in", domain+"/api/proxy/itat")
+		html = strings.ReplaceAll(html, "//itat.gov.in", domainNoProto+"/api/proxy/itat")
 
 		//  Put modified HTML back into response
 		var newBody io.ReadCloser
@@ -135,6 +133,6 @@ func main() {
 
 	fmt.Println("Benki Notice Server Started")
 
-	http.Handle("/api/proxy", proxy)
+	http.Handle("/api/proxy/itat", proxy)
 	http.ListenAndServe("0.0.0.0:"+port, nil)
 }
