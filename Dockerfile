@@ -3,19 +3,19 @@
 # ================================
 FROM golang:1.25.5-alpine3.23 AS builder
 
-WORKDIR /ca-app
+WORKDIR /notice-app
 
 # Install git (needed for go modules)
 RUN apk add --no-cache git
 
 # Copy only go mod files first (cache-friendly)
-COPY ./go.mod ./go.sum ./
+COPY backend/go.mod backend/go.sum ./
 
 # Download dependencies (cached if unchanged)
 RUN go mod download
 
 # Copy full backend source
-COPY ./ .
+COPY backend/ .
 
 # Build optimized static binary
 RUN CGO_ENABLED=0 \
@@ -28,14 +28,13 @@ RUN CGO_ENABLED=0 \
 # ================================
 FROM gcr.io/distroless/base-debian12
 
-WORKDIR /ca-app
+WORKDIR /notice-app
 
 # Copy binary only
-COPY --from=builder /ca-app/app /ca-app/app
+COPY --from=builder /notice-app/app /notice-app/app
 
 # Railway injects PORT
 EXPOSE 2028
 
 # Run
-CMD ["/ca-app/app"]
-
+CMD ["/notice-app/app"]
