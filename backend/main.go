@@ -133,6 +133,6 @@ func main() {
 
 	fmt.Println("Benki Notice Server Started")
 
-	http.Handle("/api/proxy/itat", proxy)
+	http.Handle("/api/proxy/itat/", proxy)
 	http.ListenAndServe("0.0.0.0:"+port, nil)
 }
