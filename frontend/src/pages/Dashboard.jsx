@@ -10,7 +10,7 @@ const DUMMY_DATA = Array.from({ length: 25 }, (_, i) => ({
     caseNo: `ITAT/BEN/2025/${100 + i}`,
     appellant: 'Tech Corp Ltd',
     respondent: 'ACIT Circle 4(1)',
-    summary: 'Appeal allowed in part regarding Section 80IA deductions...'
+    summary: 'Appeal allowed in part regarding Section 80IA...'
 }));
 
 const Dashboard = () => {
