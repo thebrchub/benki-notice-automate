@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Calendar, User, Gavel, BookOpen, Briefcase, Users, Scale, Edit2, Save, RotateCcw, AlertCircle, Loader2, Clock, FileText } from 'lucide-react';
+import { 
+  X, Calendar, User, Gavel, BookOpen, Briefcase, Users, Scale, 
+  Edit2, Save, RotateCcw, AlertCircle, Loader2, Clock, FileText, 
+  Maximize2, Minimize2 
+} from 'lucide-react';
 import { caseService } from '../../services/caseService';
 
 const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
@@ -10,6 +14,9 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
   const [editData, setEditData] = useState(data);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  
+  // NEW: State for Fullscreen Detailed Summary
+  const [isFullSummary, setIsFullSummary] = useState(false);
 
   const userRole = localStorage.getItem('role');
   const isAdmin = userRole === 'ADMIN';
@@ -52,7 +59,6 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
   // --- HELPER FOR INPUT FIELDS ---
   const renderEditableInput = (field, value, placeholder, isTextArea = false) => {
     if (!isEditing) {
-        // ✅ FIX: Changed 'font-medium' to 'font-normal' and added 'leading-relaxed' for readability
         return (
             <p className="text-zinc-800 dark:text-zinc-200 font-normal whitespace-pre-line leading-relaxed">
                 {value || 'N/A'}
@@ -67,7 +73,7 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
             <textarea 
                 value={value || ''} 
                 onChange={(e) => handleInputChange(field, e.target.value)}
-                className={`${commonClasses} min-h-[100px]`}
+                className={`${commonClasses} min-h-[100px] h-full resize-y`}
                 placeholder={placeholder}
             />
         );
@@ -83,7 +89,46 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
     );
   };
 
+  // --- FULL SCREEN SUMMARY MODAL ---
+  const FullScreenSummary = () => (
+    <div className="fixed inset-0 z-[60] bg-white dark:bg-[#09090b] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex justify-between items-center bg-zinc-50 dark:bg-zinc-900/50">
+            <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+                <FileText size={20} className="text-blue-500"/> Detailed Summary (Full View)
+            </h2>
+            <button 
+                onClick={() => setIsFullSummary(false)} 
+                className="flex items-center gap-2 px-4 py-2 bg-zinc-200 dark:bg-zinc-800 rounded-lg text-sm font-bold hover:opacity-80 transition-opacity"
+            >
+                <Minimize2 size={16} /> Close Fullscreen
+            </button>
+        </div>
+        
+        {/* Body (Editor/Viewer) */}
+        <div className="flex-1 p-8 overflow-y-auto">
+            <div className="max-w-5xl mx-auto h-full">
+                {isEditing ? (
+                    <textarea 
+                        value={editData.detailed_summary || ''} 
+                        onChange={(e) => handleInputChange('detailed_summary', e.target.value)}
+                        className="w-full h-full min-h-[80vh] p-6 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 text-base text-zinc-900 dark:text-white focus:ring-2 ring-blue-500 outline-none leading-relaxed resize-none font-mono"
+                        placeholder="Detailed summary..."
+                    />
+                ) : (
+                    <div className="prose dark:prose-invert max-w-none text-zinc-800 dark:text-zinc-200 leading-loose whitespace-pre-line text-lg">
+                        {editData.detailed_summary || 'No summary available.'}
+                    </div>
+                )}
+            </div>
+        </div>
+    </div>
+  );
+
   return (
+    <>
+    {isFullSummary && <FullScreenSummary />}
+
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="bg-white dark:bg-[#18181b] w-full max-w-5xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-zinc-200 dark:border-zinc-700 animate-in zoom-in-95 duration-200">
         
@@ -154,10 +199,24 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
                 }`}>
                   {data.status}
                 </span>
-                <span className="text-sm text-zinc-500 flex items-center gap-1">
-                  <Calendar size={14}/> Pronounced: {data.date_of_pronouncement}
-                </span>
+                
+                {/* ✅ UPDATED: Date of Pronouncement is now Editable */}
+                <div className="flex items-center gap-2 text-sm text-zinc-500">
+                    <Calendar size={14}/> 
+                    <span className="hidden sm:inline">Pronounced:</span>
+                    {isEditing ? (
+                        <input 
+                            type="date"
+                            value={editData.date_of_pronouncement || ''}
+                            onChange={(e) => handleInputChange('date_of_pronouncement', e.target.value)}
+                            className="bg-white dark:bg-black border border-zinc-300 dark:border-zinc-700 rounded px-2 py-0.5 text-xs text-zinc-900 dark:text-white outline-none focus:border-blue-500"
+                        />
+                    ) : (
+                        <span className="font-medium text-zinc-700 dark:text-zinc-300">{data.date_of_pronouncement}</span>
+                    )}
+                </div>
              </div>
+
              <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700"></div>
              <div className="text-sm font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
                 <User size={14} /> Added by: <span className="font-bold">{data.created_by}</span>
@@ -300,8 +359,18 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
                 <p className="text-sm font-mono text-blue-600 dark:text-blue-400 mb-2">
                     {renderEditableInput('relevant_paragraphs', editData.relevant_paragraphs, "e.g. Para 4, 5")}
                 </p>
-                <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-xl border border-zinc-100 dark:border-zinc-800">
-                    <h4 className="text-sm font-bold text-zinc-500 uppercase mb-3">Detailed Summary</h4>
+                <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-xl border border-zinc-100 dark:border-zinc-800 relative group">
+                    <div className="flex justify-between items-center mb-3">
+                        <h4 className="text-sm font-bold text-zinc-500 uppercase">Detailed Summary</h4>
+                        {/* ✅ ADDED: Fullscreen Toggle Button */}
+                        <button 
+                            onClick={() => setIsFullSummary(true)} 
+                            className="p-1.5 text-zinc-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                            title="Open Fullscreen"
+                        >
+                            <Maximize2 size={16} />
+                        </button>
+                    </div>
                     <div className="text-zinc-700 dark:text-zinc-300">
                         {renderEditableInput('detailed_summary', editData.detailed_summary, "Full Detailed Summary...", true)}
                     </div>
@@ -322,6 +391,7 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

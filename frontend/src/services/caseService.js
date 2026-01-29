@@ -45,5 +45,11 @@ export const caseService = {
   updateCase: async (caseData) => {
     const response = await api.put('/api/cases/update', caseData);
     return response.data;
+  },
+
+  // ✅ NEW: REFETCH CASE
+  refetchCase: async (orderLink) => {
+    const response = await api.post('/api/cases/refetch', { order_link: orderLink });
+    return response.data;
   }
 };

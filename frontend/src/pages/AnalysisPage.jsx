@@ -174,6 +174,7 @@ const AnalysisPage = () => {
           onDateFilter={null} 
           onExport={() => setShowExportModal(true)} 
           dataCount={data.length}
+          onRefresh={fetchData} // ✅ Pass Refresh Function here
         />
 
         <AnalysisTable 
@@ -183,6 +184,7 @@ const AnalysisPage = () => {
           totalPages={totalPages}
           onPageChange={setCurrentPage}
           onRowClick={setSelectedCase}
+          onRefresh={fetchData} // ✅ Pass Refresh Function here too
         />
       </Card>
 

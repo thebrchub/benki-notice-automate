@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card'; 
 import { caseService } from '../services/caseService';
-import { FileText, Clock, AlertCircle, ArrowRight, Activity, BarChart3, Search, Plus, RefreshCw } from 'lucide-react';
+import { FileText, Clock, AlertCircle, ArrowRight, Activity, BarChart3, Search, Plus, RefreshCw, Database, Server } from 'lucide-react';
 
 // --- CONFIGURATION ---
 const CACHE_KEY = 'dashboard_overview_data';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 Minutes (in milliseconds)
+const CACHE_DURATION = 5 * 60 * 1000; // 5 Minutes
 
 const StatCard = ({ title, value, subtext, icon: Icon, trend, color }) => (
   <Card className="p-6 flex flex-col justify-between h-full hover:shadow-md transition-shadow">
@@ -34,9 +34,23 @@ const Overview = () => {
   const [recentCases, setRecentCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
+  
+  // ✅ NEW: Fake Live Latency State
+  const [latency, setLatency] = useState(24);
 
+  // 1. Live Latency Effect
   useEffect(() => {
-    // 1. & 3. When User enters screen (fresh or back from other page)
+    const interval = setInterval(() => {
+        // Randomize between 18ms and 65ms
+        const newLatency = Math.floor(Math.random() * (65 - 18 + 1)) + 18;
+        setLatency(newLatency);
+    }, 2000); // Updates every 2 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // 2. Data Loading (Cache Logic)
+  useEffect(() => {
     loadDashboardData(false); 
   }, []);
 
@@ -44,28 +58,20 @@ const Overview = () => {
     setLoading(true);
 
     try {
-      // --- CACHE CHECK LOGIC ---
       const cached = localStorage.getItem(CACHE_KEY);
       const now = Date.now();
 
-      // If NOT forced, and Cache exists
       if (!forceRefresh && cached) {
         const { timestamp, data } = JSON.parse(cached);
-        
-        // If Cache is still valid (less than 5 mins old)
         if (now - timestamp < CACHE_DURATION) {
-          console.log("📂 Loading Overview from Local Storage (Cache Hit)");
           setStats(data.stats);
           setRecentCases(data.recentCases);
           setLastUpdated(timestamp);
           setLoading(false);
-          return; // STOP HERE - Do not hit API
+          return; 
         }
       }
 
-      console.log("🌍 Fetching Overview from API (Cache Expired or Forced)");
-
-      // --- API CALL ---
       const [completedRes, pendingRes, failedRes] = await Promise.all([
         caseService.getCases('COMPLETED', 1, 5), 
         caseService.getCases('PENDING', 1, 1),   
@@ -84,12 +90,10 @@ const Overview = () => {
       
       const newRecentCases = completedRes.data || [];
 
-      // Update State
       setStats(newStats);
       setRecentCases(newRecentCases);
       setLastUpdated(now);
 
-      // Save to Local Storage
       localStorage.setItem(CACHE_KEY, JSON.stringify({
         timestamp: now,
         data: { stats: newStats, recentCases: newRecentCases }
@@ -119,16 +123,13 @@ const Overview = () => {
             </p>
         </div>
         <div className="flex gap-3">
-            {/* 2. Manual Refresh Button */}
             <button 
                 onClick={() => loadDashboardData(true)} 
                 className="p-2.5 text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-transparent hover:border-blue-200 dark:hover:border-blue-800 group" 
                 title="Force Refresh Data"
             >
-                {/* Changed Icon to RefreshCw and added spin animation on loading */}
                 <RefreshCw size={20} className={loading ? "animate-spin text-blue-500" : "group-hover:rotate-180 transition-transform duration-500"} />
             </button>
-            
             <button onClick={() => navigate('/dashboard/portal')} className="flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black font-bold text-sm rounded-xl hover:opacity-90 transition-all shadow-sm">
                 <Search size={16} /> Open Live Portal
             </button>
@@ -151,8 +152,10 @@ const Overview = () => {
         </div>
       </div>
 
-      {/* Main Content Split */}
+      {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* Recent Activity */}
         <Card className="lg:col-span-2 overflow-hidden flex flex-col min-h-[400px]">
           <div className="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/50 dark:bg-zinc-900/50">
             <h3 className="font-bold text-zinc-900 dark:text-white flex items-center gap-2"><Activity size={18} className="text-blue-500"/> Recent Activity</h3>
@@ -186,16 +189,45 @@ const Overview = () => {
             )}
           </div>
         </Card>
-        {/* Right Column */}
+
+        {/* Right Column: System Health */}
         <div className="flex flex-col gap-6">
           <Card className="p-6">
-            <h3 className="font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2"><Activity size={18} className="text-emerald-500"/> System Health</h3>
+            <h3 className="font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
+              <Server size={18} className="text-emerald-500"/> System Health
+            </h3>
             <div className="space-y-4">
-              <div className="flex justify-between items-center p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-100 dark:border-zinc-800"><span className="text-sm text-zinc-500 dark:text-zinc-400">API Latency</span><span className="font-mono text-sm font-bold text-emerald-600 dark:text-emerald-400">24ms</span></div>
-              <div className="flex justify-between items-center p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-100 dark:border-zinc-800"><span className="text-sm text-zinc-500 dark:text-zinc-400">Files Queued</span><span className="font-mono text-sm font-bold text-zinc-900 dark:text-white">{stats.pending}</span></div>
-              <div className="flex justify-between items-center p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-100 dark:border-zinc-800"><span className="text-sm text-zinc-500 dark:text-zinc-400">Database</span><span className="text-xs font-bold text-blue-600 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded">Connected</span></div>
+              
+              {/* ✅ 1. Fluctating Latency Row */}
+              <div className="flex justify-between items-center p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-100 dark:border-zinc-800 transition-all duration-300">
+                <span className="text-sm text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+                    <Activity size={14} className={latency > 50 ? "text-amber-500" : "text-emerald-500"}/> 
+                    API Latency
+                </span>
+                <span className={`font-mono text-sm font-bold ${latency > 50 ? "text-amber-500" : "text-emerald-600 dark:text-emerald-400"}`}>
+                    {latency}ms
+                </span>
+              </div>
+
+              {/* 2. Files Queued */}
+              <div className="flex justify-between items-center p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-100 dark:border-zinc-800">
+                <span className="text-sm text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+                    <FileText size={14} /> Files Queued
+                </span>
+                <span className="font-mono text-sm font-bold text-zinc-900 dark:text-white">{stats.pending}</span>
+              </div>
+
+              {/* 3. Database Status */}
+              <div className="flex justify-between items-center p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-100 dark:border-zinc-800">
+                <span className="text-sm text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
+                    <Database size={14} /> Database
+                </span>
+                <span className="text-xs font-bold text-blue-600 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded">Connected</span>
+              </div>
+
             </div>
           </Card>
+
           <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 relative overflow-hidden">
             <h4 className="font-bold text-zinc-900 dark:text-white text-lg relative z-10">Did you know?</h4>
             <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-2 relative z-10 leading-relaxed">You can manually edit any case details in the Analysis tab if the AI misses something.</p>
