@@ -6,6 +6,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './routes/ProtectedRoute';
+import MobileRestriction from './components/MobileRestriction';
 
 import Overview from './pages/Overview';
 import ITATViewer from './components/ITATViewer';
@@ -18,6 +19,7 @@ import About from './pages/About';
 function App() {
   return (
     <ThemeProvider>
+      <MobileRestriction>
       <div className="min-h-screen w-full bg-gray-100 dark:bg-[#09090b] text-gray-900 dark:text-gray-100 font-sans transition-colors duration-300">
         <Router>
           <Routes>
@@ -49,6 +51,7 @@ function App() {
           </Routes>
         </Router>
       </div>
+      </MobileRestriction>
     </ThemeProvider>
   );
 }

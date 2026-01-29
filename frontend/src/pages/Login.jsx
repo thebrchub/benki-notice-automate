@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, AlertCircle, Loader2, Shield, Users, Eye, EyeOff } from 'lucide-react';
+import { LayoutDashboard, AlertCircle, Loader2, Shield, Users, Eye, EyeOff, HelpCircle } from 'lucide-react';
 import { authService } from '../services/authService';
 
 const Login = () => {
@@ -76,7 +76,7 @@ const Login = () => {
           <div className="mx-auto w-12 h-12 bg-black dark:bg-white rounded-xl flex items-center justify-center mb-4">
             <LayoutDashboard size={24} className="text-white dark:text-black" />
           </div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">AuditFlow</h1>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">ITAT Order Analyser</h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">Professional Audit Workspace</p>
         </div>
 
@@ -168,11 +168,17 @@ const Login = () => {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-zinc-400 dark:text-zinc-500">
-          {loginType === 'ADMIN' 
-            ? 'Restricted to System Administrators.' 
-            : 'Access limited to assigned dashboard modules.'}
-        </p>
+        {/* --- DYNAMIC HELP NOTE --- */}
+        <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800 text-center">
+            <p className="text-xs text-zinc-400 dark:text-zinc-500 flex items-center justify-center gap-1.5">
+                <HelpCircle size={14} />
+                {loginType === 'ADMIN' 
+                    ? "Forgot your password? Contact BRC HUB Technical Support."
+                    : "Forgot your password? Contact your System Admin."
+                }
+            </p>
+        </div>
+
       </div>
     </div>
   );
