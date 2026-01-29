@@ -1,13 +1,83 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <title>ITAT Order Analyser | AI Legal Intelligence</title>
+    <meta name="description" content="AI-powered analysis tool for Income Tax Appellate Tribunal (ITAT) orders. Extract summaries, outcomes, and legal precedents instantly." />
+    <meta name="theme-color" content="#09090b" />
+    
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+      /* Base Reset */
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #09090b; /* Match your dark theme bg */
+        color: #ffffff;
+        font-family: 'Inter', sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Loader Container */
+      .app-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        background: radial-gradient(circle at center, #18181b 0%, #09090b 100%);
+      }
+
+      /* Spinner Animation */
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        border-top-color: #3b82f6; /* Blue-500 */
+        animation: spin 1s ease-in-out infinite;
+        margin-bottom: 20px;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* Text Styling */
+      .loader-text {
+        font-size: 14px;
+        font-weight: 500;
+        color: #a1a1aa; /* Zinc-400 */
+        letter-spacing: 0.5px;
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="app-loader">
+        <div class="spinner"></div>
+        <div class="loader-text">Initializing ITAT Intelligence...</div>
+      </div>
+    </div>
+    
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

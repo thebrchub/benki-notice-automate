@@ -59,7 +59,7 @@ const AnalysisTable = ({
               <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-zinc-500 uppercase border-b border-slate-200 dark:border-zinc-800">Parties</th>
               <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-zinc-500 uppercase border-b border-slate-200 dark:border-zinc-800">Coram</th>
               <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-zinc-500 uppercase border-b border-slate-200 dark:border-zinc-800">Outcome</th>
-              <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-zinc-500 uppercase border-b border-slate-200 dark:border-zinc-800 text-center">Actions</th>
+              <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-zinc-500 uppercase border-b border-slate-200 dark:border-zinc-800 text-center">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
