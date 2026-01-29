@@ -11,6 +11,20 @@ export const authService = {
     return response.data;
   },
 
+  // Logout
+  logout: async () => {
+    try {
+      await api.post('/api/auth/logout');
+    } catch (err) {
+      // Even if API fails, we still clear local data
+      console.warn("Logout API failed, clearing local session");
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+    }
+  },
+
+
   // Create User
   createUser: async (userData) => {
     const response = await api.post('/api/auth/create', userData);

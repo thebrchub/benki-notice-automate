@@ -32,9 +32,9 @@ const AnalysisHeader = ({
       {/* Controls */}
       <div className="flex flex-wrap gap-3 items-center">
           
-          {/* Status Tabs */}
+          {/* Status Tabs - REMOVED 'ALL' */}
           <div className="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-lg">
-             {['ALL', 'COMPLETED', 'PENDING', 'FAILED'].map((status) => (
+             {['COMPLETED', 'PENDING', 'FAILED'].map((status) => (
                 <button
                   key={status}
                   onClick={() => setFilterStatus(status)}
@@ -44,7 +44,7 @@ const AnalysisHeader = ({
                     : 'text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200'
                   }`}
                 >
-                  {status === 'ALL' ? 'All' : status.charAt(0) + status.slice(1).toLowerCase()}
+                  {status.charAt(0) + status.slice(1).toLowerCase()}
                 </button>
              ))}
           </div>
@@ -67,8 +67,8 @@ const AnalysisHeader = ({
             {showDatePicker && (
               <div className="absolute top-full right-0 mt-2 p-4 bg-white dark:bg-[#18181b] rounded-xl shadow-xl border border-zinc-200 dark:border-zinc-700 z-50 w-72 animate-in fade-in zoom-in-95">
                   <div className="flex justify-between items-center mb-3">
-                     <span className="text-xs font-bold text-zinc-500 uppercase">Select Range</span>
-                     <button onClick={() => setShowDatePicker(false)}><X size={14} className="text-zinc-400"/></button>
+                      <span className="text-xs font-bold text-zinc-500 uppercase">Select Range</span>
+                      <button onClick={() => setShowDatePicker(false)}><X size={14} className="text-zinc-400"/></button>
                   </div>
                   <div className="space-y-3">
                      <div>
