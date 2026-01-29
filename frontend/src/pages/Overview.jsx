@@ -2,9 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card'; 
 import { caseService } from '../services/caseService';
-import { FileText, Clock, AlertCircle, ArrowRight, Activity, BarChart3, Search, Plus } from 'lucide-react';
+import { FileText, Clock, AlertCircle, ArrowRight, Activity, BarChart3, Search, Plus, RefreshCw } from 'lucide-react';
 
-// ... (Keep StatCard component as is) ...
+// --- CONFIGURATION ---
+const CACHE_KEY = 'dashboard_overview_data';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 Minutes (in milliseconds)
+
 const StatCard = ({ title, value, subtext, icon: Icon, trend, color }) => (
   <Card className="p-6 flex flex-col justify-between h-full hover:shadow-md transition-shadow">
     <div className="flex justify-between items-start">
@@ -30,36 +33,67 @@ const Overview = () => {
   const [stats, setStats] = useState({ total: 0, pending: 0, failed: 0 });
   const [recentCases, setRecentCases] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
   useEffect(() => {
-    loadDashboardData();
+    // 1. & 3. When User enters screen (fresh or back from other page)
+    loadDashboardData(false); 
   }, []);
 
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
+  const loadDashboardData = async (forceRefresh = false) => {
+    setLoading(true);
 
-      // ✅ FIX: Use 'getCases' here to match the service
-      // We fetch individual counts to ensure accuracy
+    try {
+      // --- CACHE CHECK LOGIC ---
+      const cached = localStorage.getItem(CACHE_KEY);
+      const now = Date.now();
+
+      // If NOT forced, and Cache exists
+      if (!forceRefresh && cached) {
+        const { timestamp, data } = JSON.parse(cached);
+        
+        // If Cache is still valid (less than 5 mins old)
+        if (now - timestamp < CACHE_DURATION) {
+          console.log("📂 Loading Overview from Local Storage (Cache Hit)");
+          setStats(data.stats);
+          setRecentCases(data.recentCases);
+          setLastUpdated(timestamp);
+          setLoading(false);
+          return; // STOP HERE - Do not hit API
+        }
+      }
+
+      console.log("🌍 Fetching Overview from API (Cache Expired or Forced)");
+
+      // --- API CALL ---
       const [completedRes, pendingRes, failedRes] = await Promise.all([
-        caseService.getCases('COMPLETED', 1, 5), // Get 5 completed for "Recent Activity"
-        caseService.getCases('PENDING', 1, 1),   // Just for count
-        caseService.getCases('FAILED', 1, 1)     // Just for count
+        caseService.getCases('COMPLETED', 1, 5), 
+        caseService.getCases('PENDING', 1, 1),   
+        caseService.getCases('FAILED', 1, 1)     
       ]);
 
       const completedCount = completedRes.total || 0;
       const pendingCount = pendingRes.total || 0;
       const failedCount = failedRes.total || 0;
 
-      // Calculate Total Manually (Completed + Pending + Failed)
-      setStats({
+      const newStats = {
         total: completedCount + pendingCount + failedCount,
         pending: pendingCount,
         failed: failedCount
-      });
+      };
+      
+      const newRecentCases = completedRes.data || [];
 
-      // Use the completed cases list for the feed
-      setRecentCases(completedRes.data || []);
+      // Update State
+      setStats(newStats);
+      setRecentCases(newRecentCases);
+      setLastUpdated(now);
+
+      // Save to Local Storage
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        timestamp: now,
+        data: { stats: newStats, recentCases: newRecentCases }
+      }));
 
     } catch (err) {
       console.error('Failed to load overview data', err);
@@ -75,12 +109,26 @@ const Overview = () => {
       <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
         <div>
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">Dashboard Overview</h1>
-            <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">Real-time insights from your scraping engine.</p>
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1 flex items-center gap-2">
+              Real-time insights from your scraping engine.
+              {lastUpdated && (
+                <span className="text-xs bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded-md">
+                  Updated: {new Date(lastUpdated).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </span>
+              )}
+            </p>
         </div>
         <div className="flex gap-3">
-            <button onClick={() => loadDashboardData()} className="p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800" title="Refresh Data">
-                <Activity size={20} />
+            {/* 2. Manual Refresh Button */}
+            <button 
+                onClick={() => loadDashboardData(true)} 
+                className="p-2.5 text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-transparent hover:border-blue-200 dark:hover:border-blue-800 group" 
+                title="Force Refresh Data"
+            >
+                {/* Changed Icon to RefreshCw and added spin animation on loading */}
+                <RefreshCw size={20} className={loading ? "animate-spin text-blue-500" : "group-hover:rotate-180 transition-transform duration-500"} />
             </button>
+            
             <button onClick={() => navigate('/dashboard/portal')} className="flex items-center gap-2 px-5 py-2.5 bg-zinc-900 dark:bg-white text-white dark:text-black font-bold text-sm rounded-xl hover:opacity-90 transition-all shadow-sm">
                 <Search size={16} /> Open Live Portal
             </button>

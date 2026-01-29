@@ -1,32 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
 import { Outlet, useLocation } from 'react-router-dom';
 import { UserCircle } from 'lucide-react';
-import { authService } from '../services/authService'; // Import authService
+import { authService } from '../services/authService';
 
 const Dashboard = () => {
   const [showNavbar, setShowNavbar] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
-  const [currentUser, setCurrentUser] = useState(null); // State for user info
-
+  
+  // ✅ FIX: Use useRef instead of useState for scroll tracking
+  // This prevents the component from re-rendering on every pixel scroll
+  const lastScrollY = useRef(0);
+  
+  const [currentUser, setCurrentUser] = useState(null);
   const location = useLocation();
 
   useEffect(() => {
-    // 1. Scroll Handler
     const controlNavbar = () => {
-      if (window.scrollY < 10) {
+      const currentScrollY = window.scrollY;
+
+      // Always show at the very top
+      if (currentScrollY < 10) {
         setShowNavbar(true);
-        setLastScrollY(window.scrollY);
+        lastScrollY.current = currentScrollY;
         return;
       }
-      if (window.scrollY > lastScrollY) setShowNavbar(false);
-      else setShowNavbar(true);
-      setLastScrollY(window.scrollY);
+
+      // Determine direction
+      if (currentScrollY > lastScrollY.current) {
+        // Scrolling DOWN -> Hide Navbar
+        setShowNavbar(false);
+      } else {
+        // Scrolling UP -> Show Navbar
+        setShowNavbar(true);
+      }
+
+      // Update ref (Does NOT trigger re-render)
+      lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener('scroll', controlNavbar);
 
-    // 2. Fetch User Details on Mount
+    // Fetch User Details on Mount
     const fetchUserDetails = async () => {
         try {
             const user = await authService.getCurrentUser();
@@ -38,7 +52,7 @@ const Dashboard = () => {
     fetchUserDetails();
 
     return () => window.removeEventListener('scroll', controlNavbar);
-  }, [lastScrollY]);
+  }, []); // Empty dependency array is safe here because we use refs
 
   const getHeaderTitle = () => {
     if (location.pathname === '/dashboard') return 'Overview';
@@ -51,11 +65,10 @@ const Dashboard = () => {
     return 'Dashboard';
   };
 
-  // Logic to determine display name
   const getDisplayName = () => {
       if (!currentUser) return '...';
       if (currentUser.role === 'ADMIN') return 'ADMIN';
-      return currentUser.username; // Show actual username for non-admins
+      return currentUser.username; 
   };
 
   return (
@@ -82,7 +95,7 @@ const Dashboard = () => {
             <p className="text-xs text-zinc-500">Welcome back</p>
           </div>
 
-          {/* User Profile Section (Top Right) */}
+          {/* User Profile Section */}
           <div className="flex items-center gap-3">
             <div className="text-right hidden md:block">
                 <p className="text-sm font-bold text-zinc-900 dark:text-white uppercase">

@@ -19,9 +19,10 @@ const Settings = () => {
   const [resetModal, setResetModal] = useState({ show: false, username: '', newPassword: '' });
   const [adminConfirmModal, setAdminConfirmModal] = useState({ show: false });
   const [successModal, setSuccessModal] = useState({ show: false, message: '' });
-  
-  // NEW: Add User Confirmation Modal
   const [addUserModal, setAddUserModal] = useState({ show: false });
+  
+  // NEW: Delete Confirmation Modal
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState({ show: false, username: '' });
 
   // Admin Password Form State
   const [myPassword, setMyPassword] = useState({ new: '', confirm: '' });
@@ -56,7 +57,6 @@ const Settings = () => {
 
   // --- HANDLERS ---
 
-  // 1. Initiate Add User (Opens Modal)
   const initiateAddUser = (e) => {
     e.preventDefault();
     setStatus({ type: '', message: '' });
@@ -67,7 +67,6 @@ const Settings = () => {
     setAddUserModal({ show: true });
   };
 
-  // 2. Execute Add User (After Confirmation)
   const executeAddUser = async () => {
     setAddUserModal({ show: false });
     setLoadingAction(true);
@@ -86,11 +85,21 @@ const Settings = () => {
     }
   };
 
-  const handleDeleteUser = async (username) => {
-    if (!window.confirm(`Are you sure you want to remove ${username}? This cannot be undone.`)) return;
+  // 1. Initiate Delete (Opens Modal)
+  const initiateDeleteUser = (username) => {
+    setDeleteConfirmModal({ show: true, username });
+  };
+
+  // 2. Execute Delete (After Confirmation)
+  const executeDeleteUser = async () => {
+    const usernameToDelete = deleteConfirmModal.username;
+    setDeleteConfirmModal({ show: false, username: '' }); // Close modal immediately
+
     try {
-      await authService.deleteUser(username);
-      setUsers(users.filter(u => u.username !== username)); 
+      await authService.deleteUser(usernameToDelete);
+      setUsers(users.filter(u => u.username !== usernameToDelete)); 
+      // Show Success
+      setSuccessModal({ show: true, message: `User "${usernameToDelete}" removed successfully.` });
     } catch (error) {
       alert("Failed to delete user");
     }
@@ -280,7 +289,7 @@ const Settings = () => {
                                         <Key size={16} />
                                         </button>
                                         <button 
-                                        onClick={() => handleDeleteUser(user.username)} 
+                                        onClick={() => initiateDeleteUser(user.username)} 
                                         className="p-2 text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Delete Account">
                                         <Trash2 size={16} />
                                         </button>
@@ -369,7 +378,7 @@ const Settings = () => {
         </p>
       </div>
 
-      {/* --- MODAL 1: ADD USER CONFIRMATION (NEW) --- */}
+      {/* --- MODAL 1: ADD USER CONFIRMATION --- */}
       {addUserModal.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#18181b] w-full max-w-sm rounded-2xl p-5 shadow-2xl border border-zinc-200 dark:border-zinc-700 animate-in zoom-in-95 duration-200">
@@ -385,7 +394,6 @@ const Settings = () => {
                     <p className="text-sm font-mono font-bold text-blue-600 dark:text-blue-400">{newUser.password}</p>
                 </div>
                 
-                {/* Security Note Footer */}
                 <div className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed bg-amber-50 dark:bg-amber-900/10 p-3 rounded-lg border border-amber-100 dark:border-amber-900/20">
                     <span className="font-bold text-amber-700 dark:text-amber-500 block mb-1">⚠️ Important Security Note:</span>
                     Only 3 staff members can be added. Please remember or securely record this password now. For security purposes, it will be hidden after creation. If forgotten, an Admin must reset it.
@@ -484,7 +492,33 @@ const Settings = () => {
         </div>
       )}
 
-      {/* --- MODAL 4: SUCCESS MESSAGE --- */}
+      {/* --- MODAL 4: DELETE USER CONFIRM (NEW) --- */}
+      {deleteConfirmModal.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#18181b] w-full max-w-sm rounded-2xl p-5 shadow-2xl border border-zinc-200 dark:border-zinc-700 animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Confirm Delete</h3>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6">
+              Are you sure you want to remove <span className="font-bold text-zinc-900 dark:text-white">{deleteConfirmModal.username}</span>? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setDeleteConfirmModal({ show: false, username: '' })}
+                className="px-4 py-2 text-xs font-bold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={executeDeleteUser}
+                className="px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+              >
+                Yes, Delete User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL 5: SUCCESS MESSAGE --- */}
       {successModal.show && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             <div className="bg-white dark:bg-[#18181b] w-full max-w-xs rounded-2xl p-6 shadow-2xl border border-zinc-200 dark:border-zinc-700 text-center animate-in zoom-in-95 duration-200">

@@ -49,44 +49,6 @@ const AnalysisHeader = ({
              ))}
           </div>
 
-          {/* Date Picker Button */}
-          <div className="relative">
-            <button 
-              onClick={() => setShowDatePicker(!showDatePicker)}
-              className={`flex items-center gap-2 border px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                showDatePicker || (dates.start && dates.end)
-                 ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300'
-                 : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300'
-              }`}
-            >
-              <Calendar size={16} />
-              {dates.start ? `${dates.start} to ${dates.end}` : 'Date Range'}
-            </button>
-
-            {/* Date Popover */}
-            {showDatePicker && (
-              <div className="absolute top-full right-0 mt-2 p-4 bg-white dark:bg-[#18181b] rounded-xl shadow-xl border border-zinc-200 dark:border-zinc-700 z-50 w-72 animate-in fade-in zoom-in-95">
-                  <div className="flex justify-between items-center mb-3">
-                      <span className="text-xs font-bold text-zinc-500 uppercase">Select Range</span>
-                      <button onClick={() => setShowDatePicker(false)}><X size={14} className="text-zinc-400"/></button>
-                  </div>
-                  <div className="space-y-3">
-                     <div>
-                        <label className="text-xs text-zinc-500 block mb-1">Start Date</label>
-                        <input type="date" value={dates.start} onChange={e => setDates({...dates, start: e.target.value})} className="w-full text-sm p-2 rounded border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white" />
-                     </div>
-                     <div>
-                        <label className="text-xs text-zinc-500 block mb-1">End Date</label>
-                        <input type="date" value={dates.end} onChange={e => setDates({...dates, end: e.target.value})} className="w-full text-sm p-2 rounded border border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white" />
-                     </div>
-                     <button onClick={handleApplyDate} className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700">
-                        Apply Filter
-                     </button>
-                  </div>
-              </div>
-            )}
-          </div>
-
           {/* Export */}
           <button onClick={onExport} className="flex items-center gap-2 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 px-4 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-700 transition-all text-sm font-medium shadow-sm">
             <Download size={16} className="text-emerald-600 dark:text-emerald-500" /> Export

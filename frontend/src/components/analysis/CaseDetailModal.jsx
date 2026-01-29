@@ -1,4 +1,3 @@
-// src/components/analysis/CaseDetailModal.jsx
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, User, Gavel, BookOpen, Briefcase, Users, Scale, Edit2, Save, RotateCcw, AlertCircle, Loader2, Clock, FileText } from 'lucide-react';
 import { caseService } from '../../services/caseService';
@@ -53,7 +52,12 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
   // --- HELPER FOR INPUT FIELDS ---
   const renderEditableInput = (field, value, placeholder, isTextArea = false) => {
     if (!isEditing) {
-        return <p className="text-zinc-800 dark:text-zinc-200 font-medium whitespace-pre-line">{value || 'N/A'}</p>;
+        // ✅ FIX: Changed 'font-medium' to 'font-normal' and added 'leading-relaxed' for readability
+        return (
+            <p className="text-zinc-800 dark:text-zinc-200 font-normal whitespace-pre-line leading-relaxed">
+                {value || 'N/A'}
+            </p>
+        );
     }
     
     const commonClasses = "w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-black px-3 py-2 text-sm text-zinc-900 dark:text-white focus:ring-2 ring-blue-500 outline-none transition-all";
@@ -159,7 +163,6 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
                 <User size={14} /> Added by: <span className="font-bold">{data.created_by}</span>
              </div>
              
-             {/* ✅ ADDED: Created At Timestamp */}
              <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700"></div>
              <div className="text-sm text-zinc-500 flex items-center gap-2">
                 <Clock size={14} /> Analyzed: {new Date(data.created_at).toLocaleDateString()}
@@ -176,12 +179,12 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
                    </h3>
                    <div className="space-y-3">
                       <div>
-                         <span className="text-xs text-zinc-500 uppercase font-semibold">Judicial Member</span>
-                         {renderEditableInput('judicial_member', editData.judicial_member, "Enter Judicial Member Name")}
+                          <span className="text-xs text-zinc-500 uppercase font-semibold">Judicial Member</span>
+                          {renderEditableInput('judicial_member', editData.judicial_member, "Enter Judicial Member Name")}
                       </div>
                       <div>
-                         <span className="text-xs text-zinc-500 uppercase font-semibold">Accountant Member</span>
-                         {renderEditableInput('accountant_member', editData.accountant_member, "Enter Accountant Member Name")}
+                          <span className="text-xs text-zinc-500 uppercase font-semibold">Accountant Member</span>
+                          {renderEditableInput('accountant_member', editData.accountant_member, "Enter Accountant Member Name")}
                       </div>
                    </div>
                 </div>
@@ -192,12 +195,12 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
                    </h3>
                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                         <span className="text-xs text-zinc-500 uppercase font-semibold">Appellant Rep</span>
-                         {renderEditableInput('appellant_representative', editData.appellant_representative, "Advocate Name")}
+                          <span className="text-xs text-zinc-500 uppercase font-semibold">Appellant Rep</span>
+                          {renderEditableInput('appellant_representative', editData.appellant_representative, "Advocate Name")}
                       </div>
                       <div>
-                         <span className="text-xs text-zinc-500 uppercase font-semibold">Dept Rep</span>
-                         {renderEditableInput('departmental_representative', editData.departmental_representative, "Dept Rep Name")}
+                          <span className="text-xs text-zinc-500 uppercase font-semibold">Dept Rep</span>
+                          {renderEditableInput('departmental_representative', editData.departmental_representative, "Dept Rep Name")}
                       </div>
                    </div>
                 </div>
@@ -211,16 +214,16 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
                    </h3>
                    <div className="space-y-4">
                       <div className="flex justify-between items-start border-b border-dashed border-zinc-200 dark:border-zinc-700 pb-3">
-                         <div className="w-full">
-                            <span className="text-xs text-zinc-500 uppercase font-semibold">Appellant</span>
-                            {renderEditableInput('appellant', editData.appellant, "Appellant Name")}
-                         </div>
+                          <div className="w-full">
+                             <span className="text-xs text-zinc-500 uppercase font-semibold">Appellant</span>
+                             {renderEditableInput('appellant', editData.appellant, "Appellant Name")}
+                          </div>
                       </div>
                       <div className="flex justify-between items-start pt-1">
-                         <div className="w-full">
-                            <span className="text-xs text-zinc-500 uppercase font-semibold">Respondent</span>
-                            {renderEditableInput('respondent', editData.respondent, "Respondent Name")}
-                         </div>
+                          <div className="w-full">
+                             <span className="text-xs text-zinc-500 uppercase font-semibold">Respondent</span>
+                             {renderEditableInput('respondent', editData.respondent, "Respondent Name")}
+                          </div>
                       </div>
                    </div>
                 </div>
@@ -244,7 +247,7 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
                            </select>
                        </div>
                    ) : (
-                       <p className="text-lg font-medium text-emerald-800 dark:text-emerald-200">
+                       <p className="text-lg font-normal text-emerald-800 dark:text-emerald-200">
                           Appeal in favor of: <span className="font-bold uppercase">{data.appeal_in_favor_of}</span>
                        </p>
                    )}
@@ -274,7 +277,7 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
 
           {/* Summaries Section */}
           <div className="space-y-6">
-             {/* ✅ ADDED: Four Line Summary */}
+             {/* Four Line Summary */}
              <div>
                 <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2 flex items-center gap-2">
                     <FileText size={20} className="text-blue-500" />
@@ -299,7 +302,7 @@ const CaseDetailModal = ({ data, onClose, onCaseUpdated }) => {
                 </p>
                 <div className="bg-zinc-50 dark:bg-zinc-900/50 p-6 rounded-xl border border-zinc-100 dark:border-zinc-800">
                     <h4 className="text-sm font-bold text-zinc-500 uppercase mb-3">Detailed Summary</h4>
-                    <div className="text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line text-sm md:text-base">
+                    <div className="text-zinc-700 dark:text-zinc-300">
                         {renderEditableInput('detailed_summary', editData.detailed_summary, "Full Detailed Summary...", true)}
                     </div>
                 </div>

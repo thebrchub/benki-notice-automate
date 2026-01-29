@@ -1,12 +1,13 @@
 import React from 'react';
-import { Info, RefreshCw } from 'lucide-react'; // Import icons for the note
+import { Info, RefreshCw } from 'lucide-react';
 
 const ITATViewer = () => {
   return (
-    <div className="flex flex-col h-full gap-4">
+    <div className="flex flex-col gap-6">
       
       {/* 1. Monitor Bezel (Outer Shell) */}
-      <div className="relative flex-1 w-full bg-gray-900 rounded-2xl p-3 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border border-gray-800 ring-1 ring-white/10">
+      {/* FIX: Added 'h-[75vh]' and 'min-h-[600px]' to force proper monitor dimensions */}
+      <div className="relative w-full h-[75vh] min-h-[600px] bg-gray-900 rounded-2xl p-4 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border border-gray-800 ring-1 ring-white/10">
         
         {/* 2. Top Camera Notch (Visual Detail) */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-4 bg-gray-900 rounded-b-xl border-b border-x border-gray-800 z-10 flex justify-center items-center">
@@ -17,7 +18,7 @@ const ITATViewer = () => {
         </div>
 
         {/* 3. The Screen Area (Inner Container) */}
-        <div className="w-full h-full bg-white rounded-xl overflow-hidden relative shadow-inner border border-gray-900">
+        <div className="w-full h-full bg-white rounded-lg overflow-hidden relative shadow-inner border border-gray-900">
           
           {/* The Actual Website */}
           <iframe 
@@ -36,7 +37,7 @@ const ITATViewer = () => {
 
       </div>
 
-      {/* --- ADDED NOTE SECTION --- */}
+      {/* --- NOTE SECTION --- */}
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl p-4 flex items-start gap-3 shadow-sm">
         <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg text-blue-600 dark:text-blue-300">
             <Info size={20} />

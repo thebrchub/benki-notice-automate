@@ -12,3 +12,49 @@
 body {
   @apply bg-gray-100 dark:bg-[#09090b] text-gray-900 dark:text-gray-100 transition-colors duration-300;
 }
+
+/* --- CUSTOM SCROLLBAR STYLES (V4 Compatible) --- */
+
+/* 1. Base (Light Mode) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4d4d8; /* zinc-300 */
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1aa; /* zinc-400 */
+}
+
+/* 2. Dark Mode Overrides */
+/* Since you are using a class-based dark mode, we just target .dark */
+.dark ::-webkit-scrollbar-track {
+  background: #09090b; /* Matches your --color-zinc-950 */
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #27272a; /* zinc-800 */
+  border-radius: 5px;
+  /* This border matches the background color to create a "padding" effect */
+  border: 2px solid #09090b; 
+  background-clip: content-box;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46; /* zinc-700 */
+}
+
+/* 3. Corner Fix */
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
