@@ -2,14 +2,29 @@ import api from './api';
 
 export const authService = {
   // Login
+  // login: async (username, password) => {
+  //   const response = await api.post('/api/auth/login', { username, password });
+  //   if (response.data.access_token) {
+  //     localStorage.setItem('token', response.data.access_token);
+  //     localStorage.setItem('role', response.data.role);
+  //   }
+  //   return response.data;
+  // },
+
   login: async (username, password) => {
-    const response = await api.post('/api/auth/login', { username, password });
+    // We pass { withCredentials: true } as the 3rd argument (config object)
+    const response = await api.post(
+        '/api/auth/login', 
+        { username, password }, 
+        { withCredentials: true } 
+    );
+
     if (response.data.access_token) {
-      localStorage.setItem('token', response.data.access_token);
-      localStorage.setItem('role', response.data.role);
+        localStorage.setItem('token', response.data.access_token);
+        localStorage.setItem('role', response.data.role);
     }
     return response.data;
-  },
+},
 
   // Logout
   logout: async () => {
@@ -58,4 +73,5 @@ export const authService = {
     const response = await api.delete(`/api/auth/delete?username=${username}`);
     return response.data;
   }
+
 };
