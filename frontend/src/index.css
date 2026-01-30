@@ -58,3 +58,13 @@ body {
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+@layer base {
+  button, 
+  a, 
+  [role="button"],
+  input[type="submit"],
+  input[type="button"] {
+    cursor: pointer !important;
+  }
+}
