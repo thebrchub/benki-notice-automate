@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LayoutDashboard, AlertCircle, Loader2, Shield, Users, Eye, EyeOff, HelpCircle } from 'lucide-react';
+import { 
+  LayoutDashboard, AlertCircle, Loader2, Shield, Users, 
+  Eye, EyeOff, HelpCircle, Sun, Moon // ✅ Added Sun/Moon Icons
+} from 'lucide-react';
 import { authService } from '../services/authService';
+import { useTheme } from '../context/ThemeContext'; // ✅ Import Theme Hook
 
 const Login = () => {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme(); // ✅ Get Theme State
   
   // State
   const [loginType, setLoginType] = useState('ADMIN'); 
@@ -67,8 +72,17 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gray-100 dark:bg-[#09090b] transition-colors duration-300">
+    <div className="relative flex min-h-screen w-full items-center justify-center bg-gray-100 dark:bg-[#09090b] transition-colors duration-300">
       
+      {/* ✅ THEME TOGGLE BUTTON (Top Right) */}
+      <button 
+        onClick={toggleTheme}
+        className="absolute top-6 right-6 p-2.5 rounded-full bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 shadow-sm border border-zinc-200 dark:border-zinc-700 hover:scale-105 transition-all"
+        title="Toggle Theme"
+      >
+        {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+      </button>
+
       <div className="w-full max-w-md p-8 bg-white dark:bg-[#121214] rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800">
         
         {/* Header */}
