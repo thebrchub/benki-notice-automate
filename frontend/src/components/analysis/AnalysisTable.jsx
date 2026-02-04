@@ -16,6 +16,7 @@ const AnalysisTable = ({
   const [refetchingId, setRefetchingId] = useState(null);
   const [loadingMsg, setLoadingMsg] = useState("Loading data...");
 
+  // Smart Timer for slow networks
   useEffect(() => {
     let timer;
     if (loading) {
@@ -49,7 +50,6 @@ const AnalysisTable = ({
     <div className="w-full">
       <div className="w-full overflow-x-auto min-h-[400px]">
         <table className="w-full text-left border-collapse">
-          {/* ✅ FIXED: Removed all comments/spaces between <th> tags */}
           <thead className="bg-slate-50 dark:bg-zinc-900/50">
             <tr>
               <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-zinc-500 uppercase border-b border-slate-200 dark:border-zinc-800">Added By</th>
@@ -76,20 +76,24 @@ const AnalysisTable = ({
                </tr>
             ) : data.length > 0 ? (
               data.map((item) => (
+                // ✅ Row already has cursor-pointer, which is great
                 <tr key={item.id} onClick={() => onRowClick(item)} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-colors group cursor-pointer">
-                  {/* ✅ FIXED: Ensure no spaces between <td> tags */}
+                  
                   <td className="px-6 py-4 whitespace-nowrap align-top">
                       <div className="flex flex-col">
                          <span className="text-sm font-bold text-zinc-900 dark:text-white">{item.created_by}</span>
                          <span className="text-xs text-zinc-400">{new Date(item.created_at).toLocaleDateString()}</span>
                       </div>
                   </td>
+                  
                   <td className="px-6 py-4 whitespace-nowrap align-top text-sm text-zinc-600 dark:text-zinc-300">
                       {item.date_of_pronouncement}
                   </td>
+
                   <td className="px-6 py-4 whitespace-nowrap align-top">
                       <StatusBadge status={item.status} />
                   </td>
+
                   <td className="px-6 py-4 align-top">
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-slate-800 dark:text-zinc-200 font-mono bg-slate-100 dark:bg-zinc-800 px-2 py-1 rounded w-fit mb-1">
@@ -98,6 +102,7 @@ const AnalysisTable = ({
                       <span className="text-xs text-zinc-400">{item.bench_name}</span>
                     </div>
                   </td>
+
                   <td className="px-6 py-4 align-top max-w-[200px]">
                     <div className="flex flex-col gap-1">
                         <span className="text-sm font-bold text-slate-700 dark:text-zinc-200 truncate">{item.appellant}</span>
@@ -105,23 +110,27 @@ const AnalysisTable = ({
                         <span className="text-sm text-slate-600 dark:text-zinc-400 truncate">{item.respondent}</span>
                     </div>
                   </td>
+
                   <td className="px-6 py-4 align-top max-w-[150px]">
                      <div className="flex flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
                         <p className="truncate" title={item.judicial_member}><span className="font-bold">JM:</span> {item.judicial_member?.split(' ')[0]}..</p>
                         <p className="truncate" title={item.accountant_member}><span className="font-bold">AM:</span> {item.accountant_member?.split(' ')[0]}..</p>
                      </div>
                   </td>
+
                   <td className="px-6 py-4 align-top">
                      <span className={`text-xs font-bold uppercase ${item.appeal_in_favor_of === 'Assessee' ? 'text-emerald-600' : 'text-zinc-500'}`}>
                         {item.appeal_in_favor_of}
                      </span>
                   </td>
+
                   <td className="px-6 py-4 align-top text-center">
                     {item.status === 'COMPLETED' && (
                         <button
                             onClick={(e) => handleRefetch(e, item)}
                             disabled={(refetchingId === item.id || refetchingId === item.order_link)}
-                            className="p-2 text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors group/btn"
+                            // ✅ ADDED: cursor-pointer explicit fix
+                            className="p-2 text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors group/btn cursor-pointer"
                             title="Refetch & Re-analyze"
                         >
                             <RefreshCw 
@@ -131,6 +140,7 @@ const AnalysisTable = ({
                         </button>
                     )}
                   </td>
+
                 </tr>
               ))
             ) : (
@@ -144,10 +154,11 @@ const AnalysisTable = ({
       <div className="flex justify-between items-center px-6 py-4 border-t border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/30">
         <span className="text-xs font-medium text-slate-500 dark:text-zinc-500">Page {currentPage} of {totalPages}</span>
         <div className="flex items-center gap-2">
-          <button onClick={() => onPageChange(Math.max(currentPage - 1, 1))} disabled={currentPage === 1} className="p-2 rounded-md hover:bg-white dark:hover:bg-zinc-800 disabled:opacity-30 transition-all text-zinc-600 dark:text-zinc-400">
+          {/* ✅ ADDED: cursor-pointer explicit fix */}
+          <button onClick={() => onPageChange(Math.max(currentPage - 1, 1))} disabled={currentPage === 1} className="p-2 rounded-md hover:bg-white dark:hover:bg-zinc-800 disabled:opacity-30 transition-all text-zinc-600 dark:text-zinc-400 cursor-pointer disabled:cursor-not-allowed">
             <ChevronLeft size={18} />
           </button>
-          <button onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))} disabled={currentPage === totalPages} className="p-2 rounded-md hover:bg-white dark:hover:bg-zinc-800 disabled:opacity-30 transition-all text-zinc-600 dark:text-zinc-400">
+          <button onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))} disabled={currentPage === totalPages} className="p-2 rounded-md hover:bg-white dark:hover:bg-zinc-800 disabled:opacity-30 transition-all text-zinc-600 dark:text-zinc-400 cursor-pointer disabled:cursor-not-allowed">
             <ChevronRight size={18} />
           </button>
         </div>

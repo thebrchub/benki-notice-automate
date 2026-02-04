@@ -7,8 +7,7 @@ import { authService } from '../services/authService';
 const Dashboard = () => {
   const [showNavbar, setShowNavbar] = useState(true);
   
-  // ✅ FIX: Use useRef instead of useState for scroll tracking
-  // This prevents the component from re-rendering on every pixel scroll
+  // Ref for scroll tracking
   const lastScrollY = useRef(0);
   
   const [currentUser, setCurrentUser] = useState(null);
@@ -18,29 +17,22 @@ const Dashboard = () => {
     const controlNavbar = () => {
       const currentScrollY = window.scrollY;
 
-      // Always show at the very top
       if (currentScrollY < 10) {
         setShowNavbar(true);
         lastScrollY.current = currentScrollY;
         return;
       }
 
-      // Determine direction
       if (currentScrollY > lastScrollY.current) {
-        // Scrolling DOWN -> Hide Navbar
         setShowNavbar(false);
       } else {
-        // Scrolling UP -> Show Navbar
         setShowNavbar(true);
       }
-
-      // Update ref (Does NOT trigger re-render)
       lastScrollY.current = currentScrollY;
     };
 
     window.addEventListener('scroll', controlNavbar);
 
-    // Fetch User Details on Mount
     const fetchUserDetails = async () => {
         try {
             const user = await authService.getCurrentUser();
@@ -52,7 +44,7 @@ const Dashboard = () => {
     fetchUserDetails();
 
     return () => window.removeEventListener('scroll', controlNavbar);
-  }, []); // Empty dependency array is safe here because we use refs
+  }, []);
 
   const getHeaderTitle = () => {
     if (location.pathname === '/dashboard') return 'Overview';
@@ -67,32 +59,39 @@ const Dashboard = () => {
 
   const getDisplayName = () => {
       if (!currentUser) return '...';
-      if (currentUser.role === 'ADMIN') return 'ADMIN';
+      // ✅ CHANGE 1: Always return username, even for Admin
       return currentUser.username; 
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-black">
 
-      {/* Sidebar */}
-      <div className="sticky top-0 h-screen shrink-0 z-40">
+      {/* Sidebar (Desktop Sticky / Mobile Fixed via Sidebar Component) */}
+      <div className="hidden md:block sticky top-0 h-screen shrink-0 z-40">
         <Sidebar />
       </div>
+      
+      {/* Mobile Sidebar is handled inside Sidebar component (fixed position) */}
+      <div className="md:hidden">
+          <Sidebar />
+      </div>
 
-      {/* Main */}
+      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
 
         {/* Header */}
         <header
-          className={`sticky top-0 z-30 px-8 py-5 bg-gray-100/90 dark:bg-black/90 backdrop-blur-md flex items-center justify-between border-b transition-transform duration-300 ${
+          className={`sticky top-0 z-30 px-4 md:px-8 py-4 md:py-5 bg-gray-100/90 dark:bg-black/90 backdrop-blur-md flex items-center justify-between border-b transition-transform duration-300 ${
             showNavbar ? 'translate-y-0' : '-translate-y-full'
           }`}
         >
-          <div>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-white">
+          
+          {/* Title Section */}
+          <div className="flex-1 text-center md:text-left md:pl-0 pl-12"> 
+            <h2 className="text-lg md:text-xl font-bold text-zinc-900 dark:text-white">
               {getHeaderTitle()}
             </h2>
-            <p className="text-xs text-zinc-500">Welcome back</p>
+            {/* ✅ CHANGE 2: Removed "Welcome back" paragraph here */}
           </div>
 
           {/* User Profile Section */}
@@ -106,15 +105,15 @@ const Dashboard = () => {
                 </p>
             </div>
             
-            <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700 shadow-sm">
-                <UserCircle size={24} />
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-zinc-500 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-700 shadow-sm shrink-0">
+                <UserCircle size={20} className="md:w-6 md:h-6" />
             </div>
           </div> 
 
         </header>
 
         {/* PAGE CONTENT */}
-        <main className="flex-1 p-8 pt-4">
+        <main className="flex-1 p-4 md:p-8 pt-4">
           <Outlet />
         </main>
       </div>

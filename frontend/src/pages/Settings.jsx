@@ -15,13 +15,16 @@ const Settings = () => {
   const [newUser, setNewUser] = useState({ username: '', password: '', role: 'USER' });
   const [status, setStatus] = useState({ type: '', message: '' });
 
+  // --- PASSWORD VISIBILITY STATES (Fix #2) ---
+  const [showUserPwd, setShowUserPwd] = useState(false);
+  const [showAdminNewPwd, setShowAdminNewPwd] = useState(false);
+  const [showAdminConfirmPwd, setShowAdminConfirmPwd] = useState(false);
+
   // --- MODAL STATES ---
   const [resetModal, setResetModal] = useState({ show: false, username: '', newPassword: '' });
   const [adminConfirmModal, setAdminConfirmModal] = useState({ show: false });
   const [successModal, setSuccessModal] = useState({ show: false, message: '' });
   const [addUserModal, setAddUserModal] = useState({ show: false });
-  
-  // NEW: Delete Confirmation Modal
   const [deleteConfirmModal, setDeleteConfirmModal] = useState({ show: false, username: '' });
 
   // Admin Password Form State
@@ -77,6 +80,8 @@ const Settings = () => {
       setStatus({ type: 'success', message: `Staff member "${newUser.username}" added successfully!` });
       loadUsers(); 
       setNewUser({ username: '', password: '', role: 'USER' }); 
+      // Reset visibility
+      setShowUserPwd(false);
     } catch (error) {
       const msg = error.response?.data?.message || 'Failed to create user.';
       setStatus({ type: 'error', message: msg });
@@ -85,20 +90,17 @@ const Settings = () => {
     }
   };
 
-  // 1. Initiate Delete (Opens Modal)
   const initiateDeleteUser = (username) => {
     setDeleteConfirmModal({ show: true, username });
   };
 
-  // 2. Execute Delete (After Confirmation)
   const executeDeleteUser = async () => {
     const usernameToDelete = deleteConfirmModal.username;
-    setDeleteConfirmModal({ show: false, username: '' }); // Close modal immediately
+    setDeleteConfirmModal({ show: false, username: '' }); 
 
     try {
       await authService.deleteUser(usernameToDelete);
       setUsers(users.filter(u => u.username !== usernameToDelete)); 
-      // Show Success
       setSuccessModal({ show: true, message: `User "${usernameToDelete}" removed successfully.` });
     } catch (error) {
       alert("Failed to delete user");
@@ -163,7 +165,8 @@ const Settings = () => {
     <div className="p-6 max-w-7xl mx-auto animate-in fade-in duration-500 flex flex-col min-h-[85vh]">
       
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">Settings</h1>
+        {/* Fix #1: Changed Title to Admin Control Panel to avoid duplicate "Settings" */}
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">Admin Control Panel</h1>
         <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">
           Manage access controls and team configurations.
         </p>
@@ -218,20 +221,40 @@ const Settings = () => {
                         <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">Username</label>
                         <input 
                           type="text" required value={newUser.username}
+                          // Fix #3: Added autocomplete
+                          autoComplete="username"
                           onChange={(e) => setNewUser({...newUser, username: e.target.value})}
                           className="w-full h-11 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 px-4 text-sm text-zinc-900 dark:text-white focus:ring-2 ring-blue-500 outline-none transition-all"
                           placeholder="e.g. staff_member"
                         />
                       </div>
+                      
                       <div className="space-y-2">
-                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">Temporary Password</label>
-                        <div className="flex gap-3">
-                            <input 
-                            type="text" required value={newUser.password}
-                            onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                            className="flex-1 h-11 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 px-4 text-sm text-zinc-900 dark:text-white focus:ring-2 ring-blue-500 outline-none transition-all"
-                            placeholder="Set password"
-                            />
+                        {/* Fix #2: Changed Label to just Password */}
+                        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">Password</label>
+                        <div className="flex gap-3 relative">
+                            <div className="relative flex-1">
+                                <input 
+                                    // Fix #2: Toggle Type
+                                    type={showUserPwd ? "text" : "password"} 
+                                    required 
+                                    value={newUser.password}
+                                    // Fix #3: Added autocomplete for password
+                                    autoComplete="new-password"
+                                    onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                                    className="w-full h-11 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 pl-4 pr-10 text-sm text-zinc-900 dark:text-white focus:ring-2 ring-blue-500 outline-none transition-all"
+                                    placeholder="Set password"
+                                />
+                                {/* Fix #2: Eye Icon Button */}
+                                <button
+                                    type="button"
+                                    onClick={() => setShowUserPwd(!showUserPwd)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                                >
+                                    {showUserPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                                </button>
+                            </div>
+
                             <button 
                                 type="submit" 
                                 disabled={loadingAction} 
@@ -244,6 +267,7 @@ const Settings = () => {
                   </form>
                </div>
 
+               {/* ... (Team List Table remains the same) ... */}
                <div className="bg-white dark:bg-[#121214] rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden min-h-[300px]">
                   <div className="px-6 py-4 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-zinc-50/30 dark:bg-zinc-900/30">
                       <h2 className="text-base font-bold text-zinc-900 dark:text-white">Active Team Members</h2>
@@ -317,7 +341,7 @@ const Settings = () => {
 
           {/* TAB 2: SECURITY */}
           {activeTab === 'security' && (
-            <div className="bg-white dark:bg-[#121214] p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm max-w-2xl">
+            <div className="bg-white dark:bg-[#121214] p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm max-w-2xl mx-auto">
                 <div className="border-b border-zinc-100 dark:border-zinc-800 pb-6 mb-6">
                     <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                         <Lock size={20} className="text-purple-500"/>
@@ -342,25 +366,49 @@ const Settings = () => {
                 <form onSubmit={initiateAdminPasswordUpdate} className="space-y-5">
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">New Password</label>
-                        <input 
-                            type="password" 
-                            className="w-full h-11 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 px-4 text-sm text-zinc-900 dark:text-white focus:ring-2 ring-purple-500 outline-none transition-all"
-                            value={myPassword.new}
-                            onChange={(e) => setMyPassword({...myPassword, new: e.target.value})}
-                            required
-                            placeholder="Enter a strong new password"
-                        />
+                        <div className="relative">
+                            <input 
+                                // Fix #2: Toggle Admin Pwd
+                                type={showAdminNewPwd ? "text" : "password"}
+                                className="w-full h-11 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 pl-4 pr-10 text-sm text-zinc-900 dark:text-white focus:ring-2 ring-purple-500 outline-none transition-all"
+                                value={myPassword.new}
+                                // Fix #3: Autocomplete
+                                autoComplete="new-password"
+                                onChange={(e) => setMyPassword({...myPassword, new: e.target.value})}
+                                required
+                                placeholder="Enter a strong new password"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowAdminNewPwd(!showAdminNewPwd)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                            >
+                                {showAdminNewPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider ml-1">Confirm Password</label>
-                        <input 
-                            type="password" 
-                            className="w-full h-11 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 px-4 text-sm text-zinc-900 dark:text-white focus:ring-2 ring-purple-500 outline-none transition-all"
-                            value={myPassword.confirm}
-                            onChange={(e) => setMyPassword({...myPassword, confirm: e.target.value})}
-                            required
-                            placeholder="Repeat new password"
-                        />
+                        <div className="relative">
+                            <input 
+                                // Fix #2: Toggle Confirm Pwd
+                                type={showAdminConfirmPwd ? "text" : "password"} 
+                                className="w-full h-11 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 pl-4 pr-10 text-sm text-zinc-900 dark:text-white focus:ring-2 ring-purple-500 outline-none transition-all"
+                                value={myPassword.confirm}
+                                // Fix #3: Autocomplete
+                                autoComplete="new-password"
+                                onChange={(e) => setMyPassword({...myPassword, confirm: e.target.value})}
+                                required
+                                placeholder="Repeat new password"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowAdminConfirmPwd(!showAdminConfirmPwd)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+                            >
+                                {showAdminConfirmPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                        </div>
                     </div>
                     <div className="pt-2">
                         <button type="submit" className="h-11 px-8 bg-zinc-900 dark:bg-white text-white dark:text-black font-bold rounded-xl hover:opacity-90 transition-all shadow-sm">
@@ -391,6 +439,7 @@ const Settings = () => {
                 </div>
                 <div className="p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-xl border border-zinc-100 dark:border-zinc-800">
                     <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold mb-0.5">Password</p>
+                    {/* Only show password here if needed, or mask it */}
                     <p className="text-sm font-mono font-bold text-blue-600 dark:text-blue-400">{newUser.password}</p>
                 </div>
                 
@@ -418,6 +467,9 @@ const Settings = () => {
         </div>
       )}
 
+      {/* ... (Other Modals: Reset, Admin Confirm, Delete Confirm, Success - remain unchanged) ... */}
+      {/* ... (Copy them exactly as they were in your code to ensure functionality) ... */}
+      
       {/* --- MODAL 2: STAFF PASSWORD RESET --- */}
       {resetModal.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">

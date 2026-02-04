@@ -6,21 +6,13 @@ const MobileRestriction = ({ children }) => {
 
   useEffect(() => {
     const checkScreen = () => {
-      // 1. Viewport Check
-      // Standard Tablets (iPad Mini) start at 768px. Anything less is a phone.
+      // We only check innerWidth (Viewport). 
+      // 1. Normal Phone: < 768px (BLOCKED)
+      // 2. Tablet / Desktop: >= 768px (ALLOWED)
+      // 3. Phone in "Desktop Mode": Browser reports ~980px (ALLOWED)
       const viewportWidth = window.innerWidth;
-      
-      // 2. Physical Screen Check (Catches "Desktop Mode" on phones)
-      // Even if viewport is 1200px (zoomed out), a phone's physical screen width 
-      // (in CSS pixels) is usually < 500px.
-      const physicalWidth = window.screen.width;
 
-      // Logic: If viewport OR physical screen is too small, block it.
-      // We exclude iPads which usually have physical width >= 768.
-      const isMobileSize = viewportWidth < 768;
-      const isSmallDevice = physicalWidth < 768; 
-
-      setIsRestricted(isMobileSize || isSmallDevice);
+      setIsRestricted(viewportWidth < 768);
     };
 
     // Run on mount and resize

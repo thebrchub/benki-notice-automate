@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card'; 
 import { caseService } from '../services/caseService';
-import { FileText, Clock, AlertCircle, ArrowRight, Activity, BarChart3, Search, Plus, RefreshCw, Database, Server } from 'lucide-react';
+import { FileText, Clock, AlertCircle, ArrowRight, Activity, BarChart3, Search, Plus, RefreshCw, Database, Server, Lightbulb } from 'lucide-react';
 
 // --- CONFIGURATION ---
 const CACHE_KEY = 'dashboard_overview_data';
@@ -37,6 +37,10 @@ const Overview = () => {
   
   // ✅ NEW: Fake Live Latency State
   const [latency, setLatency] = useState(24);
+
+  // ✅ NEW: Check User Role
+  const userRole = localStorage.getItem('role');
+  const isAdmin = userRole === 'ADMIN';
 
   // 1. Live Latency Effect
   useEffect(() => {
@@ -198,7 +202,7 @@ const Overview = () => {
             </h3>
             <div className="space-y-4">
               
-              {/* ✅ 1. Fluctating Latency Row */}
+              {/* 1. Fluctating Latency Row */}
               <div className="flex justify-between items-center p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-100 dark:border-zinc-800 transition-all duration-300">
                 <span className="text-sm text-zinc-500 dark:text-zinc-400 flex items-center gap-2">
                     <Activity size={14} className={latency > 50 ? "text-amber-500" : "text-emerald-500"}/> 
@@ -228,10 +232,15 @@ const Overview = () => {
             </div>
           </Card>
 
+          {/* ✅ DYNAMIC "DID YOU KNOW" BOX */}
           <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 relative overflow-hidden">
             <h4 className="font-bold text-zinc-900 dark:text-white text-lg relative z-10">Did you know?</h4>
-            <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-2 relative z-10 leading-relaxed">You can manually edit any case details in the Analysis tab if the AI misses something.</p>
-            <div className="absolute -bottom-2 -right-2 text-zinc-200 dark:text-zinc-800 opacity-50 rotate-12"><FileText size={80} /></div>
+            <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-2 relative z-10 leading-relaxed">
+              {isAdmin 
+                ? "You can manually edit any case details in the Analysis tab if the AI misses something." 
+                : "You can filter cases by specific criteria and export detailed reports to Excel directly from the Analysis tab."}
+            </p>
+            <div className="absolute -bottom-2 -right-2 text-zinc-200 dark:text-zinc-800 opacity-50 rotate-12"><Lightbulb size={80} /></div>
           </div>
         </div>
       </div>
