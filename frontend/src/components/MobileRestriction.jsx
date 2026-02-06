@@ -6,18 +6,36 @@ const MobileRestriction = ({ children }) => {
 
   useEffect(() => {
     const checkScreen = () => {
-      // We only check innerWidth (Viewport). 
-      // 1. Normal Phone: < 768px (BLOCKED)
-      // 2. Tablet / Desktop: >= 768px (ALLOWED)
-      // 3. Phone in "Desktop Mode": Browser reports ~980px (ALLOWED)
+      // --- LOGIC EXPLANATION ---
+      
+      // 1. Viewport Width (Standard CSS pixels)
+      // Normal mobile browsing falls here.
       const viewportWidth = window.innerWidth;
 
-      setIsRestricted(viewportWidth < 768);
+      // 2. Physical Screen Size (The "Anti-Desktop Mode" Check)
+      // "Desktop Mode" changes innerWidth, but it CANNOT change the physical screen size.
+      // We check the *shortest* side of the device.
+      // - Phones: Shortest side is usually 390px - 430px.
+      // - iPad Mini (Smallest Tablet): Shortest side is ~744px.
+      // - Desktop: Shortest side is usually > 800px.
+      const minPhysicalDimension = Math.min(window.screen.width, window.screen.height);
+
+      // 3. Strict Rules
+      // Rule A: If viewport is small (< 768), it's definitely mobile.
+      // Rule B: If the physical shortest side is < 600px, it is DEFINITELY a phone 
+      //         (even if it's faking a 1280px desktop viewport).
+      
+      const isMobileDevice = (viewportWidth < 768) || (minPhysicalDimension < 600);
+
+      setIsRestricted(isMobileDevice);
     };
 
-    // Run on mount and resize
+    // Run on mount
     checkScreen();
+    
+    // Run on resize (orientation change)
     window.addEventListener('resize', checkScreen);
+    
     return () => window.removeEventListener('resize', checkScreen);
   }, []);
 
@@ -40,8 +58,8 @@ const MobileRestriction = ({ children }) => {
         </h1>
         
         <p className="text-zinc-400 max-w-sm mx-auto leading-relaxed mb-8 text-sm md:text-base">
-          To ensure data accuracy and maintain the integrity of our complex analysis interface, 
-          <span className="text-zinc-200 font-semibold"> mobile access is restricted.</span>
+          Our advanced analysis engine requires a full desktop environment. 
+          <span className="text-red-400 font-semibold block mt-2">Mobile Devices are strictly prohibited.</span>
         </p>
 
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 max-w-xs mx-auto space-y-3">
@@ -61,7 +79,7 @@ const MobileRestriction = ({ children }) => {
                 </div>
                 <div>
                     <p className="text-xs font-bold text-zinc-300">iPad / Tablet</p>
-                    <p className="text-[10px] text-zinc-500">Supported (Portrait/Landscape)</p>
+                    <p className="text-[10px] text-zinc-500">Fully Supported</p>
                 </div>
             </div>
             <div className="w-full h-px bg-zinc-800"></div>
@@ -71,13 +89,13 @@ const MobileRestriction = ({ children }) => {
                 </div>
                 <div>
                     <p className="text-xs font-bold text-zinc-500 line-through">Mobile Phones</p>
-                    <p className="text-[10px] text-red-500 font-medium">Restricted</p>
+                    <p className="text-[10px] text-red-500 font-medium">Restricted (Strict)</p>
                 </div>
             </div>
         </div>
 
         <p className="mt-10 text-[10px] text-zinc-600 font-mono">
-            ERR_MOBILE_DEVICE_DETECTED
+            ERR_DEVICE_NOT_PERMITTED_403
         </p>
       </div>
     );
