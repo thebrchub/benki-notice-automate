@@ -63,7 +63,7 @@ const ITATViewer = () => {
           */}
           <iframe 
             id="itatFrame" 
-            src="https://benkinotice-api.brchub.me/api/proxy/itat/judicial/tribunalorders"
+            src="https://lawwise-api.casanketmjoshi.in/api/proxy/itat/judicial/tribunalorders"
             className="w-full h-full border-none bg-white" 
             title="ITAT Website Container"
             sandbox="allow-forms allow-scripts allow-same-origin allow-modals allow-downloads"
@@ -101,5 +101,6 @@ const ITATViewer = () => {
     </div>
   );
 };
+
 
 export default ITATViewer;
