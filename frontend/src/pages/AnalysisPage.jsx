@@ -41,7 +41,15 @@ const AnalysisPage = () => {
     setLoading(true);
     try {
       const response = await caseService.getCases(filterStatus, currentPage, 10); 
-      const newData = response.data || [];
+      let newData = response.data || [];
+
+      // ✅ FIX: Ensure every item has a unique key for React
+      // If your DB doesn't return 'id', we generate a temp one for the UI
+      newData = newData.map((item, index) => ({
+          ...item,
+          _ui_key: item.id || item._id || `temp-${currentPage}-${index}`
+      }));
+
       setData(newData);
       setTotalPages(Math.ceil((response.total || 0) / 10));
 
@@ -73,11 +81,12 @@ const AnalysisPage = () => {
     // 1. Try strict object reference (Most reliable if data wasn't mutated)
     let index = data.indexOf(clickedCase);
 
-    // 2. If reference failed (e.g. strict mode or copies), try ID
+    // 2. If reference failed (e.g. strict mode or copies), try ID or UI Key
     if (index === -1) {
         index = data.findIndex(c => 
             (c.id && c.id === clickedCase.id) || 
-            (c._id && c._id === clickedCase._id)
+            (c._id && c._id === clickedCase._id) ||
+            (c._ui_key && c._ui_key === clickedCase._ui_key)
         );
     }
 

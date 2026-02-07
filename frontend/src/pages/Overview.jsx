@@ -35,10 +35,10 @@ const Overview = () => {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
   
-  // ✅ Fake Live Latency State
+  // Fake Live Latency State
   const [latency, setLatency] = useState(24);
 
-  // ✅ Check User Role
+  // Check User Role
   const userRole = localStorage.getItem('role');
   const isAdmin = userRole === 'ADMIN';
 
@@ -170,8 +170,9 @@ const Overview = () => {
               <div className="flex-1 flex flex-col items-center justify-center text-zinc-400 gap-3"><div className="w-6 h-6 border-2 border-zinc-300 border-t-blue-500 rounded-full animate-spin"></div><p className="text-sm">Syncing data...</p></div>
             ) : recentCases.length > 0 ? (
               <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                {recentCases.map((item) => (
-                  <div key={item.id} onClick={() => navigate('/dashboard/analysis')} className="px-6 py-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-900/50 cursor-pointer transition-colors group">
+                {/* ✅ FIX: Added index as fallback key to prevent console errors */}
+                {recentCases.map((item, index) => (
+                  <div key={item.id || index} onClick={() => navigate('/dashboard/analysis')} className="px-6 py-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-900/50 cursor-pointer transition-colors group">
                     <div className="flex items-center gap-4">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${item.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20' : item.status === 'FAILED' ? 'bg-red-50 text-red-600 dark:bg-red-900/20' : 'bg-blue-50 text-blue-600 dark:bg-blue-900/20'}`}><FileText size={18} /></div>
                         <div><p className="text-sm font-bold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{item.citation_number || `Case #${item.id}`}</p><p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{item.bench_name} Bench</p></div>
@@ -232,7 +233,7 @@ const Overview = () => {
             </div>
           </Card>
 
-          {/* ✅ DID YOU KNOW BOX */}
+          {/* Did You Know Box */}
           <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 relative overflow-hidden">
             <h4 className="font-bold text-zinc-900 dark:text-white text-lg relative z-10">Did you know?</h4>
             <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-2 relative z-10 leading-relaxed">
@@ -245,7 +246,7 @@ const Overview = () => {
         </div>
       </div>
 
-      {/* ✅ NEW: CLIENT BANNER SECTION (Bottom of Page) */}
+      {/* Client Banner */}
       <div className="w-full mt-4">
         <img 
             src="/banner/1.webp" 

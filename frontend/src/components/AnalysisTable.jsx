@@ -115,8 +115,9 @@ const AnalysisTable = () => {
                     </td>
                  </tr>
               ) : data.length > 0 ? (
-                data.map((item) => (
-                  <tr key={item.id} onClick={() => setSelectedCase(item)} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-colors group cursor-pointer">
+                // ✅ FIX: Added 'index' as fallback key to ensure unique keys
+                data.map((item, index) => (
+                  <tr key={item.id || index} onClick={() => setSelectedCase(item)} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-colors group cursor-pointer">
                     
                     {/* 1. Added By */}
                     <td className="px-6 py-4 whitespace-nowrap align-top">
