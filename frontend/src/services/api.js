@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 // 1. Base URL
-const API_URL = 'https://benkinotice-api.brchub.me'; 
+const API_URL = 'https://lawwise-api.casanketmjoshi.in'; 
 
 const api = axios.create({
   baseURL: API_URL,
@@ -43,5 +43,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 
 export default api;
