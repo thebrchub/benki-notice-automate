@@ -8,7 +8,8 @@ import {
   HelpCircle,
   Lightbulb,
   Code2,
-  Cpu
+  Cpu,
+  ExternalLink 
 } from 'lucide-react';
 import Card from '../components/Card';
 
@@ -22,7 +23,7 @@ const About = () => {
           <Info size={32} />
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-white tracking-tight">
-          About ITAT Order Analyser
+          About LawWise
         </h1>
         <p className="text-zinc-500 dark:text-zinc-400 max-w-2xl mx-auto text-lg leading-relaxed">
           An AI-powered legal intelligence tool designed to scrape, analyze, and summarize 
@@ -140,37 +141,77 @@ const About = () => {
         </div>
       </div>
 
-      {/* 4. Credits & Architecture (Dimmed UI) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-90">
+      {/* 4. Credits & Architecture (Zoom + Shimmer Effect) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-          {/* Initiative */}
-          <div className="p-6 bg-white/50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col justify-between">
-              <div>
-                  <div className="flex items-center gap-3 mb-3">
-                      <Lightbulb size={20} className="text-blue-500 opacity-80" />
-                      <h3 className="font-bold text-zinc-700 dark:text-zinc-300 text-sm uppercase tracking-wide">
-                          Conceptualized By
-                      </h3>
+          {/* Initiative Link */}
+          <a 
+            href="https://www.casanketmjoshi.in/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="
+                relative overflow-hidden group 
+                p-6 bg-white dark:bg-zinc-900 
+                rounded-2xl border border-zinc-200 dark:border-zinc-800 
+                flex flex-col justify-between 
+                transition-all duration-300 ease-out 
+                hover:scale-[1.02] hover:shadow-2xl hover:border-blue-300 dark:hover:border-blue-900
+            "
+          >
+              {/* SHIMMER EFFECT LAYER */}
+              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out bg-gradient-to-r from-transparent via-white/40 dark:via-white/5 to-transparent skew-x-12 z-0 pointer-events-none" />
+
+              <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-500">
+                            <Lightbulb size={20} />
+                        </div>
+                        <h3 className="font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase tracking-widest">
+                            Conceptualized By
+                        </h3>
+                      </div>
+                      <ExternalLink size={16} className="text-zinc-300 group-hover:text-blue-500 transition-colors" />
                   </div>
-                  <h4 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">
+                  <h4 className="text-xl font-bold text-zinc-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                       Sanket Milind Joshi & Co.
                   </h4>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed mb-4">
                       An AI-enabled initiative bridging the gap between traditional tax practice and modern technology. Pioneering steps in streamlining complex order research and enhancing analytical accuracy.
                   </p>
               </div>
-          </div>
+          </a>
 
-          {/* Development */}
-          <div className="p-6 bg-white/50 dark:bg-zinc-900/50 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col justify-between">
-              <div>
-                  <div className="flex items-center gap-3 mb-3">
-                      <Code2 size={20} className="text-purple-500 opacity-80" />
-                      <h3 className="font-bold text-zinc-700 dark:text-zinc-300 text-sm uppercase tracking-wide">
-                          Designed & Developed By
-                      </h3>
+          {/* Development Link */}
+          <a 
+            href="https://www.thebrchub.tech/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="
+                relative overflow-hidden group 
+                p-6 bg-white dark:bg-zinc-900 
+                rounded-2xl border border-zinc-200 dark:border-zinc-800 
+                flex flex-col justify-between 
+                transition-all duration-300 ease-out 
+                hover:scale-[1.02] hover:shadow-2xl hover:border-purple-300 dark:hover:border-purple-900
+            "
+          >
+              {/* SHIMMER EFFECT LAYER */}
+              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out bg-gradient-to-r from-transparent via-white/40 dark:via-white/5 to-transparent skew-x-12 z-0 pointer-events-none" />
+
+              <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-purple-500">
+                            <Code2 size={20} />
+                        </div>
+                        <h3 className="font-bold text-zinc-500 dark:text-zinc-400 text-xs uppercase tracking-widest">
+                            Designed & Developed By
+                        </h3>
+                      </div>
+                      <ExternalLink size={16} className="text-zinc-300 group-hover:text-purple-500 transition-colors" />
                   </div>
-                  <h4 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">
+                  <h4 className="text-xl font-bold text-zinc-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                       BRC HUB LLP
                   </h4>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed mb-3">
@@ -180,7 +221,7 @@ const About = () => {
                       <Cpu size={10} />v1.0
                   </div>
               </div>
-          </div>
+          </a>
       </div>
 
       {/* 5. Footer Note */}

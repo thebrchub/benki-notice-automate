@@ -35,10 +35,10 @@ const Overview = () => {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
   
-  // ✅ NEW: Fake Live Latency State
+  // ✅ Fake Live Latency State
   const [latency, setLatency] = useState(24);
 
-  // ✅ NEW: Check User Role
+  // ✅ Check User Role
   const userRole = localStorage.getItem('role');
   const isAdmin = userRole === 'ADMIN';
 
@@ -111,7 +111,7 @@ const Overview = () => {
   };
 
   return (
-    <div className="flex flex-col gap-8 animate-in fade-in duration-500">
+    <div className="flex flex-col gap-8 animate-in fade-in duration-500 pb-10">
       
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
@@ -232,7 +232,7 @@ const Overview = () => {
             </div>
           </Card>
 
-          {/* ✅ UPDATED "DID YOU KNOW" BOX */}
+          {/* ✅ DID YOU KNOW BOX */}
           <div className="bg-zinc-100 dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 relative overflow-hidden">
             <h4 className="font-bold text-zinc-900 dark:text-white text-lg relative z-10">Did you know?</h4>
             <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-2 relative z-10 leading-relaxed">
@@ -244,6 +244,16 @@ const Overview = () => {
           </div>
         </div>
       </div>
+
+      {/* ✅ NEW: CLIENT BANNER SECTION (Bottom of Page) */}
+      <div className="w-full mt-4">
+        <img 
+            src="/banner/1.webp" 
+            alt="Client Banner" 
+            className="w-full h-auto rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 object-cover" 
+        />
+      </div>
+
     </div>
   );
 };

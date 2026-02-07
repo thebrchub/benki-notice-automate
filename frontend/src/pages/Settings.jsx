@@ -420,9 +420,10 @@ const Settings = () => {
           )}
       </div>
 
+      {/* ✅ CLICKABLE FOOTER */}
       <div className="mt-16 mb-4 text-center">
         <p className="text-[10px] sm:text-xs text-zinc-300 dark:text-zinc-600 font-medium tracking-wide">
-          An AI enabled initiative by <span className="text-zinc-400 dark:text-zinc-500 font-semibold">Sanket Milind Joshi & Co</span> <span className="mx-1.5 opacity-50">|</span> Designed and Developed by <span className="text-zinc-400 dark:text-zinc-500 font-semibold">BRC HUB LLP</span> <span className="mx-1.5 opacity-50">|</span> <span className="text-zinc-400 dark:text-zinc-500 font-semibold">Benk-Y Architecture</span>
+          An AI enabled initiative by <a href="https://www.casanketmjoshi.in" target="_blank" rel="noopener noreferrer" className="text-zinc-400 dark:text-zinc-500 font-semibold hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">Sanket Milind Joshi & Co</a> <span className="mx-1.5 opacity-50">|</span> Designed and Developed by <a href="https://www.thebrchub.tech" target="_blank" rel="noopener noreferrer" className="text-zinc-400 dark:text-zinc-500 font-semibold hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">BRC HUB LLP</a> <span className="mx-1.5 opacity-50">|</span> <span className="text-zinc-400 dark:text-zinc-500 font-semibold">Benk-Y Architecture</span>
         </p>
       </div>
 
@@ -467,9 +468,6 @@ const Settings = () => {
         </div>
       )}
 
-      {/* ... (Other Modals: Reset, Admin Confirm, Delete Confirm, Success - remain unchanged) ... */}
-      {/* ... (Copy them exactly as they were in your code to ensure functionality) ... */}
-      
       {/* --- MODAL 2: STAFF PASSWORD RESET --- */}
       {resetModal.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">

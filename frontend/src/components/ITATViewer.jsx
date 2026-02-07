@@ -9,10 +9,9 @@ const ITATViewer = () => {
     <div className="flex flex-col gap-4 md:gap-6">
       
       {/* 1. RESPONSIVE MONITOR/TABLET FRAME */}
-      {/* Mobile: Thinner bezel (p-2), Shorter height (h-[60vh]). Desktop: Thicker (p-4), Taller (h-[75vh]). */}
       <div className="relative w-full h-[60vh] md:h-[75vh] min-h-[400px] md:min-h-[600px] bg-gray-900 rounded-xl md:rounded-2xl p-2 md:p-4 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border border-gray-800 ring-1 ring-white/10 transition-all duration-300">
         
-        {/* 2. Top Camera Notch (Hidden on Mobile to save space) */}
+        {/* 2. Top Camera Notch */}
         <div className="hidden md:flex absolute top-0 left-1/2 -translate-x-1/2 w-32 h-4 bg-gray-900 rounded-b-xl border-b border-x border-gray-800 z-10 justify-center items-center">
            <div className="w-1.5 h-1.5 bg-[#1a1a1a] rounded-full ring-1 ring-gray-700 shadow-inner"></div>
            <div className="w-1 h-1 bg-[#111] rounded-full ml-2 opacity-50"></div>
@@ -24,7 +23,7 @@ const ITATViewer = () => {
           {/* --- A. LOADING OVERLAY --- */}
           <div 
             className={`absolute inset-0 z-20 bg-zinc-950 flex flex-col items-center justify-center text-center transition-opacity duration-700 ease-in-out p-4 ${
-                iframeLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'
+              iframeLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'
             }`}
           >
              <div className="relative mb-6 md:mb-8">
@@ -56,11 +55,18 @@ const ITATViewer = () => {
           </div>
 
           {/* --- B. THE IFRAME --- */}
+          {/* ✅ SANDBOX ATTRIBUTE ADDED 
+              - allow-popups IS REMOVED: This blocks 'Open in New Tab' (Middle Click).
+              - allow-same-origin: Required for the site to function properly.
+              - allow-scripts: Required for JS.
+              - allow-forms: Required for inputs.
+          */}
           <iframe 
             id="itatFrame" 
             src="https://benkinotice-api.brchub.me/api/proxy/itat/judicial/tribunalorders"
             className="w-full h-full border-none bg-white" 
             title="ITAT Website Container"
+            sandbox="allow-forms allow-scripts allow-same-origin allow-modals allow-downloads"
             onLoad={() => setIframeLoaded(true)} 
           />
 

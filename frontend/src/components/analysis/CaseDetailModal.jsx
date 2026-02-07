@@ -3,7 +3,7 @@ import {
   X, Calendar, User, Gavel, BookOpen, Briefcase, Users, Scale, 
   Edit2, Save, RotateCcw, AlertCircle, Loader2, Clock, FileText, 
   Maximize2, Minimize2, Download, ChevronLeft, ChevronRight, CheckCircle,
-  ChevronsLeft, ChevronsRight // ✅ Added these imports
+  ChevronsLeft, ChevronsRight 
 } from 'lucide-react';
 import { caseService } from '../../services/caseService';
 import { generateCasePDF } from '../utils/casePdfGenerator'; 
@@ -55,7 +55,6 @@ const CaseDetailModal = ({
     onPrev, 
     hasNext, 
     hasPrev,
-    // ✅ NEW PROPS RECEIVED FROM PARENT
     isFirstOnPage,
     isLastOnPage,
     hasPrevPage,
@@ -70,6 +69,9 @@ const CaseDetailModal = ({
   const [isFullSummary, setIsFullSummary] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
+  // ✅ NEW: PDF Generation State
+  const [pdfStatus, setPdfStatus] = useState('IDLE'); // 'IDLE' | 'GENERATING' | 'DONE'
+
   const userRole = localStorage.getItem('role');
   const isAdmin = userRole === 'ADMIN';
   const canEdit = isAdmin && data.status === 'COMPLETED';
@@ -77,6 +79,7 @@ const CaseDetailModal = ({
   useEffect(() => {
     setEditData(data);
     setIsEditing(false);
+    setPdfStatus('IDLE'); // Reset PDF status when data changes
   }, [data]);
 
   // --- KEYBOARD NAVIGATION ---
@@ -111,6 +114,25 @@ const CaseDetailModal = ({
     } finally {
       setSaving(false);
     }
+  };
+
+  // ✅ NEW: Handle PDF Download with Animation
+  const handleDownloadPDF = async () => {
+      if (pdfStatus !== 'IDLE') return; // Prevent double click
+
+      setPdfStatus('GENERATING');
+      try {
+          await generateCasePDF(data);
+          setPdfStatus('DONE');
+          
+          // Revert to IDLE after 3 seconds
+          setTimeout(() => {
+              setPdfStatus('IDLE');
+          }, 3000);
+      } catch (error) {
+          console.error("PDF Generation failed", error);
+          setPdfStatus('IDLE');
+      }
   };
 
   const handleCancel = () => {
@@ -149,10 +171,7 @@ const CaseDetailModal = ({
     </div>
   );
 
-  // ✅ LOGIC: Determine which Icon to show
-  // If we are at the Start of the Page AND there is a Prev Page -> Double Arrow
   const showPrevPageIcon = isFirstOnPage && hasPrevPage;
-  // If we are at the End of the Page AND there is a Next Page -> Double Arrow
   const showNextPageIcon = isLastOnPage && hasNextPage;
 
   return (
@@ -185,7 +204,7 @@ const CaseDetailModal = ({
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
-            {/* ✅ UPDATED Navigation Buttons */}
+            {/* Navigation Buttons */}
             <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1 mr-2 border border-zinc-200 dark:border-zinc-700">
                 
                 {/* PREVIOUS BUTTON */}
@@ -207,7 +226,7 @@ const CaseDetailModal = ({
                     className="p-1.5 hover:bg-white dark:hover:bg-zinc-600 rounded-md disabled:opacity-30 disabled:cursor-not-allowed transition-all text-zinc-700 dark:text-zinc-300" 
                     title={showNextPageIcon ? "Load Next Page" : "Next Case"}
                 >
-                     {showNextPageIcon ? <ChevronsRight size={18} className="text-blue-600 dark:text-blue-400"/> : <ChevronRight size={18} />}
+                      {showNextPageIcon ? <ChevronsRight size={18} className="text-blue-600 dark:text-blue-400"/> : <ChevronRight size={18} />}
                 </button>
 
             </div>
@@ -332,7 +351,22 @@ const CaseDetailModal = ({
 
         {/* Footer */}
         <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex justify-end gap-3">
-           <button onClick={() => generateCasePDF(data)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg border border-zinc-300 dark:border-zinc-700 transition-colors"><Download size={16} /> PDF</button>
+           
+           {/* ✅ UPDATED: PDF BUTTON */}
+           <button 
+                onClick={handleDownloadPDF} 
+                disabled={pdfStatus !== 'IDLE'}
+                className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition-all ${
+                    pdfStatus === 'DONE' 
+                    ? 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800' 
+                    : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-800 border-zinc-300 dark:border-zinc-700'
+                }`}
+           >
+                {pdfStatus === 'IDLE' && <><Download size={16} /> PDF</>}
+                {pdfStatus === 'GENERATING' && <><Loader2 size={16} className="animate-spin" /> Generating...</>}
+                {pdfStatus === 'DONE' && <><CheckCircle size={16} /> Done</>}
+           </button>
+
            <a href={data.order_link} target="_blank" rel="noreferrer" className="px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">View Order</a>
            <button onClick={onClose} className="px-6 py-2 text-sm font-bold bg-zinc-900 dark:bg-white text-white dark:text-black rounded-lg hover:opacity-90">Close</button>
         </div>

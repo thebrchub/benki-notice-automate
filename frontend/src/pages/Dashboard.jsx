@@ -59,19 +59,17 @@ const Dashboard = () => {
 
   const getDisplayName = () => {
       if (!currentUser) return '...';
-      // ✅ CHANGE 1: Always return username, even for Admin
       return currentUser.username; 
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-black">
 
-      {/* Sidebar (Desktop Sticky / Mobile Fixed via Sidebar Component) */}
+      {/* Sidebar */}
       <div className="hidden md:block sticky top-0 h-screen shrink-0 z-40">
         <Sidebar />
       </div>
       
-      {/* Mobile Sidebar is handled inside Sidebar component (fixed position) */}
       <div className="md:hidden">
           <Sidebar />
       </div>
@@ -79,11 +77,14 @@ const Dashboard = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
 
-        {/* Header */}
+        {/* ✅ HEADER UPDATED: Restored border but made it super subtle (thinner look) */}
         <header
-          className={`sticky top-0 z-30 px-4 md:px-8 py-4 md:py-5 bg-gray-100/90 dark:bg-black/90 backdrop-blur-md flex items-center justify-between border-b transition-transform duration-300 ${
+          className={`sticky top-0 z-30 px-4 md:px-8 py-4 md:py-5 bg-gray-100/90 dark:bg-black/90 backdrop-blur-md flex items-center justify-between transition-transform duration-300 ${
             showNavbar ? 'translate-y-0' : '-translate-y-full'
-          }`}
+          }
+          /* Subtle bottom border + Small shadow for depth */
+          border-b border-gray-200/50 dark:border-zinc-800/50 shadow-sm
+          `}
         >
           
           {/* Title Section */}
@@ -91,7 +92,6 @@ const Dashboard = () => {
             <h2 className="text-lg md:text-xl font-bold text-zinc-900 dark:text-white">
               {getHeaderTitle()}
             </h2>
-            {/* ✅ CHANGE 2: Removed "Welcome back" paragraph here */}
           </div>
 
           {/* User Profile Section */}
