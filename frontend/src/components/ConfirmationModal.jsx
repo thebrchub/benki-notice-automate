@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertTriangle, CheckCircle, X } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const ConfirmationModal = ({ 
   isOpen, 
@@ -8,66 +8,67 @@ const ConfirmationModal = ({
   title, 
   message, 
   isLoading,
-  mode = 'confirm' // 'confirm' (2 buttons) or 'alert' (1 button)
+  mode = 'confirm' // 'confirm' or 'alert'
 }) => {
   if (!isOpen) return null;
 
   const isAlert = mode === 'alert';
 
+  // Choose button color: Emerald for Success (Alert), Blue for Action (Confirm)
+  const buttonColorClass = isAlert 
+    ? "bg-emerald-600 hover:bg-emerald-700" 
+    : "bg-blue-600 hover:bg-blue-700";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    // 1. Overlay: Matches Logout Modal (z-[100], backdrop-blur-sm)
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      
+      {/* 2. Container: Matches Logout Modal (rounded-2xl, dark:bg-[#18181b], max-w-sm) */}
       <div 
-        className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all scale-100"
+        className="bg-white dark:bg-[#18181b] w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-zinc-200 dark:border-zinc-700 transform transition-all scale-100"
         onClick={(e) => e.stopPropagation()} 
       >
-        <div className="flex items-start gap-4">
-          {/* Icon Changes based on Mode */}
-          <div className={`p-3 rounded-full ${isAlert ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}>
-            {isAlert ? (
-               <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-500" />
-            ) : (
-               <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-500" />
-            )}
-          </div>
-          
-          <div className="flex-1">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
-              {title}
-            </h3>
-            <p className="text-sm text-slate-500 dark:text-zinc-400 leading-relaxed">
-              {message}
-            </p>
-          </div>
-          
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 transition-colors">
-            <X size={20} />
-          </button>
-        </div>
+        
+        {/* 3. Typography: Matches Logout Modal */}
+        <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">
+          {title}
+        </h3>
+        
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 leading-relaxed">
+          {message}
+        </p>
 
-        <div className="flex justify-end gap-3 mt-6">
-          {/* Only show CANCEL if we are in 'confirm' mode */}
+        {/* 4. Buttons: Matches Logout Modal layout (flex gap-3 justify-end) */}
+        <div className="flex gap-3 justify-end">
+          
+          {/* Cancel Button - Hidden if in 'alert' mode */}
           {!isAlert && (
             <button 
               onClick={onClose}
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition-colors"
             >
               Cancel
             </button>
           )}
 
+          {/* Primary Action Button */}
           <button 
             onClick={onConfirm}
             disabled={isLoading}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-lg shadow-sm transition-all flex items-center gap-2
-              ${isAlert 
-                ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-500/20' 
-                : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20'
-              }`}
+            className={`px-4 py-2 text-sm font-bold text-white rounded-lg flex items-center gap-2 transition-colors ${buttonColorClass}`}
           >
-            {isLoading ? "Processing..." : (isAlert ? "OK" : "Yes, Refetch")}
+            {isLoading ? (
+              <>
+                <Loader2 size={16} className="animate-spin" /> Processing...
+              </>
+            ) : (
+              // Dynamic text based on mode
+              isAlert ? "OK" : "Yes, Refetch"
+            )}
           </button>
         </div>
+
       </div>
     </div>
   );
