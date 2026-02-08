@@ -54,8 +54,7 @@ export const generateCasePDF = async (data) => {
     console.warn("Banner failed to load, falling back to text.", error);
     yPos += 10;
   }
-
-  // --- 2. FOOTER LOGIC (Updated with Disclaimer) ---
+// --- 2. FOOTER LOGIC (BoldItalic Label + Hanging Indent) ---
   const addFooter = () => {
     const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
@@ -66,22 +65,43 @@ export const generateCasePDF = async (data) => {
       doc.setLineWidth(0.1);
       doc.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
 
-      // Disclaimer Text
+      // --- DISCLAIMER LOGIC ---
+      doc.setFontSize(7);
+      doc.setTextColor(100); 
+
+      const label = "Disclaimer : ";
+      const body = "The information provided in this document is for general informational purposes only and does not constitute legal advice. Therefore, any reliance on such information is strictly at reader’s own risk.";
+      
+      // 1. Calculate Label Width using 'bolditalic'
+      // We set the font first to ensure the width calculation is accurate for bold text
+      doc.setFont("helvetica", "bolditalic"); 
+      const labelWidth = doc.getTextWidth(label);
+      
+      // 2. Prepare Body Text using 'italic'
       doc.setFont("helvetica", "italic");
-      doc.setFontSize(7); // Smaller font for disclaimer
-      doc.setTextColor(100); // Grey text
+      const availableWidth = maxLineWidth - labelWidth;
+      const splitBody = doc.splitTextToSize(body, availableWidth);
       
-      const disclaimer = "Disclaimer : The information provided in this document is for general informational purposes only and does not constitute legal advice. Therefore, any reliance on such information is strictly at reader’s own risk.";
-      const splitDisclaimer = doc.splitTextToSize(disclaimer, maxLineWidth);
+      // 3. Calculate Centering
+      // The visual center is based on: Label Width + Width of the first line of the body
+      const totalBlockWidth = labelWidth + doc.getTextWidth(splitBody[0]);
+      const startX = (pageWidth - totalBlockWidth) / 2;
+
+      // 4. Print Label (Switch to BoldItalic)
+      doc.setFont("helvetica", "bolditalic");
+      doc.text(label, startX, pageHeight - 15);
+
+      // 5. Print Body (Switch back to Italic)
+      // We print at (startX + labelWidth) to make it flow seamlessly from the label
+      doc.setFont("helvetica", "italic");
+      doc.text(splitBody, startX + labelWidth, pageHeight - 15);
       
-      doc.text(splitDisclaimer, pageWidth / 2, pageHeight - 15, { align: "center" });
-      
-      // Page Number
+      // --- PAGE NUMBER ---
+      doc.setFont("helvetica", "normal"); // Reset to normal font
       doc.setFontSize(8);
       doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 8, { align: "right" });
     }
   };
-
   // --- 3. PAGE BREAK CHECKER ---
   const checkPageBreak = (heightToAdd) => {
     // Safety limit 265mm to avoid hitting the new taller footer
@@ -118,10 +138,9 @@ export const generateCasePDF = async (data) => {
 
     if (justify) {
         // ✅ JUSTIFIED ALIGNMENT
-        // Note: 'maxWidth' is required for 'align: justify' to work in jsPDF
         doc.text(content, margin, yPos, { maxWidth: maxLineWidth, align: "justify" });
     } else {
-        // Standard Left Alignment (Better for short lists/names)
+        // Standard Left Alignment
         doc.text(splitText, margin, yPos);
     }
     
@@ -151,7 +170,6 @@ export const generateCasePDF = async (data) => {
               const keyword = match[0]; 
               const content = para.replace(keyword, "").trim(); 
               
-              // Calculate height using raw text length approximation for simplicity + safety buffer
               const splitContent = doc.splitTextToSize(content, maxLineWidth);
               const blockHeight = 5 + (splitContent.length * 5) + 4;
               
@@ -164,7 +182,6 @@ export const generateCasePDF = async (data) => {
               
               // Content (Normal & Justified)
               doc.setFont("helvetica", "normal");
-              // ✅ JUSTIFIED
               doc.text(content, margin, yPos, { maxWidth: maxLineWidth, align: "justify" });
               
               yPos += (splitContent.length * 5) + 4; 
@@ -176,7 +193,6 @@ export const generateCasePDF = async (data) => {
               const splitText = doc.splitTextToSize(para, maxLineWidth);
               checkPageBreak(splitText.length * 5);
               
-              // ✅ JUSTIFIED
               doc.text(para, margin, yPos, { maxWidth: maxLineWidth, align: "justify" });
               yPos += (splitText.length * 5) + 4;
           }
@@ -227,7 +243,7 @@ export const generateCasePDF = async (data) => {
   doc.text(resLines, margin, yPos);
   yPos += (resLines.length * 5) + 8;
 
-  // 4. DETAILS (Left Aligned usually looks better for short fields)
+  // 4. DETAILS
   addSection("Coram (Judges):", `${data.judicial_member || '-'} (JM), ${data.accountant_member || '-'} (AM)`);
   addSection("Representation:", `Appellant Rep: ${data.appellant_representative || 'None'}\nDepartment Rep: ${data.departmental_representative || 'None'}`);
   addSection("Sections Involved:", Array.isArray(data.sections_involved) ? data.sections_involved.join(', ') : data.sections_involved);
@@ -238,15 +254,13 @@ export const generateCasePDF = async (data) => {
   doc.line(margin, yPos, pageWidth - margin, yPos);
   yPos += 8;
 
-  // 5. SUMMARIES (✅ Justified)
-  // Passing 'true' as 3rd argument to enable justification
+  // 5. SUMMARIES
   addSection("Quick Summary:", data.four_line_summary, true);
   
   if(data.issues_involved) {
       addSection("Issues Involved:", data.issues_involved, true);
   }
   
-  // Smart Analysis handles justification internally now
   addSmartSummary(data.detailed_summary);
 
   // --- FINALIZE ---
