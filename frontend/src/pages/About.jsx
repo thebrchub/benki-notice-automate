@@ -215,7 +215,7 @@ const About = () => {
                       BRC HUB LLP
                   </h4>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed mb-3">
-                      Powered by the proprietary <strong>Benk-Y Architecture</strong> (Binary Extraction & Normalization Kernel - Yield) for scalable scraping and zero-latency data retrieval.
+                      Powered by the proprietary <strong>Benk-Y Architecture</strong> (Backend Enhanced Neural Kernel - Yield) for scalable scraping and zero-latency data retrieval.
                   </p>
                   <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded border border-zinc-200 dark:border-zinc-700 text-[10px] font-mono text-zinc-500">
                       <Cpu size={10} />v1.0

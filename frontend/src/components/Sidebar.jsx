@@ -18,6 +18,7 @@ import {
 import { useTheme } from "../context/ThemeContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { authService } from "../services/authService";
+import Logo from './Logo';
 
 const Sidebar = () => {
   const { theme, toggleTheme } = useTheme();
@@ -156,26 +157,28 @@ const Sidebar = () => {
         <div className="flex flex-col w-full h-full overflow-hidden">
             
             {/* BRAND HEADER */}
-            <div
-            className={`flex items-center transition-all duration-300 ${
-                isCollapsed ? "p-4 justify-center" : "p-6 justify-start"
-            }`}
-            >
-            {isCollapsed ? (
-                <div className="hidden md:flex w-10 h-10 bg-blue-600 rounded-xl items-center justify-center text-white font-bold text-lg shadow-lg shrink-0">
-                LW
-                </div>
-            ) : null}
+<div
+  className={`flex items-center transition-all duration-300 ${
+    isCollapsed ? "p-4 justify-center" : "p-6 justify-start gap-3"
+  }`}
+>
+  {/* ✅ DYNAMIC LOGO: Switches between 2.png (Dark) and 3.png (Light) */}
+  <img 
+    src={theme === 'dark' ? "/logo/2.png" : "/logo/3.png"} 
+    alt="LawWise Logo" 
+    className="w-10 h-10 object-contain shrink-0" 
+  />
 
-            <div className={`${isCollapsed ? "md:hidden" : "block"} overflow-hidden`}>
-                <h1 className="text-xl font-bold text-zinc-900 dark:text-white whitespace-nowrap">
-                LawWise<span className="opacity-50"> Workspace</span>
-                </h1>
-                <p className="text-xs text-zinc-500 mt-1 whitespace-nowrap">
-                {userRole === "ADMIN" ? "Admin Console" : "Team Workspace"}
-                </p>
-            </div>
-            </div>
+  {/* TEXT LABELS (Hidden when Collapsed on Desktop) */}
+  <div className={`${isCollapsed ? "md:hidden" : "block"} overflow-hidden`}>
+    <h1 className="text-lg font-bold text-zinc-900 dark:text-white whitespace-nowrap">
+      LawWise<span className="opacity-50"> Workspace</span>
+    </h1>
+    <p className="text-xs text-zinc-500 mt-1 whitespace-nowrap">
+      {userRole === "ADMIN" ? "Admin Console" : "Team Workspace"}
+    </p>
+  </div>
+</div>
 
             {/* ✅ MENU ITEMS (Scrollable Area) */}
             {/* Note: We removed overflow-visible here. Standard overflow-y-auto is fine because tooltip is now OUTSIDE. */}

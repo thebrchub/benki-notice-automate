@@ -446,7 +446,7 @@ const Settings = () => {
                 
                 <div className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed bg-amber-50 dark:bg-amber-900/10 p-3 rounded-lg border border-amber-100 dark:border-amber-900/20">
                     <span className="font-bold text-amber-700 dark:text-amber-500 block mb-1">⚠️ Important Security Note:</span>
-                    Only 3 staff members can be added. Please remember or securely record this password now. For security purposes, it will be hidden after creation. If forgotten, an Admin must reset it.
+                    Only 5 staff members can be added. Please remember or securely record this password now. For security purposes, it will be hidden after creation. If forgotten, an Admin must reset it.
                 </div>
             </div>
 

@@ -90,7 +90,7 @@ const Login = () => {
           <div className="mx-auto w-12 h-12 bg-black dark:bg-white rounded-xl flex items-center justify-center mb-4">
             <LayoutDashboard size={24} className="text-white dark:text-black" />
           </div>
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">ITAT Order Analyser</h1>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">LawWise</h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">Professional Audit Workspace</p>
         </div>
 
