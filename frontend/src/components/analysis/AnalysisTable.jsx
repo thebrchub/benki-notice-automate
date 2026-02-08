@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import StatusBadge from './StatusBadge';
+import ConfirmationModal from '../ConfirmationModal'; // Ensure this path matches your file structure
 import { ChevronLeft, ChevronRight, RefreshCw, Loader2 } from 'lucide-react';
 import { caseService } from '../../services/caseService'; 
 
@@ -16,6 +17,16 @@ const AnalysisTable = ({
   const [refetchingId, setRefetchingId] = useState(null);
   const [loadingMsg, setLoadingMsg] = useState("Loading data...");
 
+  // --- UNIFIED MODAL STATE ---
+  // We use a single object to manage the modal's content and mode
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    mode: 'confirm', // 'confirm' (2 buttons) or 'alert' (1 button)
+    title: '',
+    message: '',
+    item: null
+  });
+
   // Smart Timer for slow networks
   useEffect(() => {
     let timer;
@@ -28,19 +39,60 @@ const AnalysisTable = ({
     return () => clearTimeout(timer);
   }, [loading]);
 
-  const handleRefetch = async (e, item) => {
+  // 1. OPEN CONFIRMATION MODAL
+  const initiateRefetch = (e, item) => {
     e.stopPropagation(); 
-    if (!window.confirm(`Are you sure you want to refetch case ${item.citation_number}?`)) return;
+    setModalConfig({
+      isOpen: true,
+      mode: 'confirm',
+      title: 'Confirm Refetch',
+      message: `Are you sure you want to refetch case ${item.citation_number}? This will restart the analysis process.`,
+      item: item
+    });
+  };
 
-    setRefetchingId(item.id || item.order_link); 
+  // 2. HANDLE MODAL ACTIONS (Confirm OR OK)
+  const handleModalAction = async () => {
+    // If we are currently showing an Alert (Success/Error), clicking OK just closes it.
+    if (modalConfig.mode === 'alert') {
+      setModalConfig(prev => ({ ...prev, isOpen: false }));
+      return;
+    }
+
+    // --- LOGIC FOR CONFIRMATION ---
+    const item = modalConfig.item;
+    if (!item) return;
+
+    // 1. Set row loading state
+    setRefetchingId(item.id || item.order_link);
+    
+    // 2. Close the confirmation modal so user sees the row spinner
+    setModalConfig(prev => ({ ...prev, isOpen: false }));
 
     try {
         await caseService.refetchCase(item.order_link);
-        alert("Case queued for re-analysis!");
+        
+        // 3. On Success: Open Modal in 'alert' mode
+        setModalConfig({
+          isOpen: true,
+          mode: 'alert',
+          title: 'Success',
+          message: 'Case queued for re-analysis successfully!',
+          item: null // Clear item to prevent re-triggering
+        });
+
         if (onRefresh) onRefresh(); 
     } catch (error) {
         console.error("Refetch failed", error);
-        alert("Failed to queue case.");
+        
+        // On Error: Open Modal in 'alert' mode
+        setModalConfig({
+          isOpen: true,
+          mode: 'alert',
+          title: 'Error',
+          message: 'Failed to queue case. Please try again.',
+          item: null
+        });
     } finally {
         setRefetchingId(null); 
     }
@@ -81,7 +133,7 @@ const AnalysisTable = ({
                   <td className="px-6 py-4 whitespace-nowrap align-top">
                       <div className="flex flex-col">
                          <span className="text-sm font-bold text-zinc-900 dark:text-white">{item.created_by}</span>
-                         {/* ✅ FIXED: Added 'en-GB' to force DD/MM/YYYY format */}
+                         {/* ✅ FIXED: en-GB forces DD/MM/YYYY */}
                          <span className="text-xs text-zinc-400">{new Date(item.created_at).toLocaleDateString('en-GB')}</span>
                       </div>
                   </td>
@@ -127,7 +179,7 @@ const AnalysisTable = ({
                   <td className="px-6 py-4 align-top text-center">
                     {item.status === 'COMPLETED' && (
                         <button
-                            onClick={(e) => handleRefetch(e, item)}
+                            onClick={(e) => initiateRefetch(e, item)}
                             disabled={(refetchingId === item.id || refetchingId === item.order_link)}
                             className="p-2 text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors group/btn cursor-pointer"
                             title="Refetch & Re-analyze"
@@ -161,6 +213,16 @@ const AnalysisTable = ({
           </button>
         </div>
       </div>
+
+      {/* ✅ ONE MODAL TO RULE THEM ALL */}
+      <ConfirmationModal
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={handleModalAction}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        mode={modalConfig.mode} 
+      />
     </div>
   );
 };
