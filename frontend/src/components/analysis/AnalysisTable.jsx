@@ -18,7 +18,6 @@ const AnalysisTable = ({
   const [loadingMsg, setLoadingMsg] = useState("Loading data...");
 
   // --- UNIFIED MODAL STATE ---
-  // We use a single object to manage the modal's content and mode
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
     mode: 'confirm', // 'confirm' (2 buttons) or 'alert' (1 button)
@@ -133,7 +132,6 @@ const AnalysisTable = ({
                   <td className="px-6 py-4 whitespace-nowrap align-top">
                       <div className="flex flex-col">
                          <span className="text-sm font-bold text-zinc-900 dark:text-white">{item.created_by}</span>
-                         {/* ✅ FIXED: en-GB forces DD/MM/YYYY */}
                          <span className="text-xs text-zinc-400">{new Date(item.created_at).toLocaleDateString('en-GB')}</span>
                       </div>
                   </td>
@@ -177,12 +175,17 @@ const AnalysisTable = ({
                   </td>
 
                   <td className="px-6 py-4 align-top text-center">
-                    {item.status === 'COMPLETED' && (
+                    {/* ✅ UPDATED LOGIC: Show Refetch button for COMPLETED OR FAILED */}
+                    {(item.status === 'COMPLETED' || item.status === 'FAILED') && (
                         <button
                             onClick={(e) => initiateRefetch(e, item)}
                             disabled={(refetchingId === item.id || refetchingId === item.order_link)}
-                            className="p-2 text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors group/btn cursor-pointer"
-                            title="Refetch & Re-analyze"
+                            className={`p-2 rounded-lg transition-colors group/btn cursor-pointer ${
+                                item.status === 'FAILED' 
+                                ? 'text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20' 
+                                : 'text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                            }`}
+                            title={item.status === 'FAILED' ? "Retry Analysis" : "Refetch & Re-analyze"}
                         >
                             <RefreshCw 
                                 size={16} 
