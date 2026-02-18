@@ -69,8 +69,8 @@ const CaseDetailModal = ({
   const [isFullSummary, setIsFullSummary] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  // ✅ NEW: PDF Generation State
-  const [pdfStatus, setPdfStatus] = useState('IDLE'); // 'IDLE' | 'GENERATING' | 'DONE'
+  // ✅ PDF Generation State Only (Toggle Removed)
+  const [pdfStatus, setPdfStatus] = useState('IDLE'); 
 
   const userRole = localStorage.getItem('role');
   const isAdmin = userRole === 'ADMIN';
@@ -79,7 +79,7 @@ const CaseDetailModal = ({
   useEffect(() => {
     setEditData(data);
     setIsEditing(false);
-    setPdfStatus('IDLE'); // Reset PDF status when data changes
+    setPdfStatus('IDLE'); 
   }, [data]);
 
   // --- KEYBOARD NAVIGATION ---
@@ -116,16 +116,15 @@ const CaseDetailModal = ({
     }
   };
 
-  // ✅ NEW: Handle PDF Download with Animation
+  // ✅ Simplified PDF Handler (No Options passed)
   const handleDownloadPDF = async () => {
-      if (pdfStatus !== 'IDLE') return; // Prevent double click
+      if (pdfStatus !== 'IDLE') return; 
 
       setPdfStatus('GENERATING');
       try {
-          await generateCasePDF(data);
+          await generateCasePDF(data); // Uses default behavior
           setPdfStatus('DONE');
           
-          // Revert to IDLE after 3 seconds
           setTimeout(() => {
               setPdfStatus('IDLE');
           }, 3000);
@@ -207,7 +206,6 @@ const CaseDetailModal = ({
             {/* Navigation Buttons */}
             <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 rounded-lg p-1 mr-2 border border-zinc-200 dark:border-zinc-700">
                 
-                {/* PREVIOUS BUTTON */}
                 <button 
                     onClick={onPrev} 
                     disabled={!hasPrev || isLoading} 
@@ -219,7 +217,6 @@ const CaseDetailModal = ({
                 
                 <div className="w-px h-4 bg-zinc-300 dark:bg-zinc-700 mx-1"></div>
                 
-                {/* NEXT BUTTON */}
                 <button 
                     onClick={onNext} 
                     disabled={!hasNext || isLoading} 
@@ -350,9 +347,9 @@ const CaseDetailModal = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex justify-end gap-3">
+        <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 flex flex-wrap justify-end gap-3 items-center">
            
-           {/* ✅ UPDATED: PDF BUTTON */}
+           {/* ✅ PDF BUTTON (Toggle Removed) */}
            <button 
                 onClick={handleDownloadPDF} 
                 disabled={pdfStatus !== 'IDLE'}

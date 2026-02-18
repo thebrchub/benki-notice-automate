@@ -16,6 +16,9 @@ const AnalysisPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   
+  // ✅ NEW: State to hold the total number of records (e.g., 556)
+  const [totalRecords, setTotalRecords] = useState(0);
+
   // Filters
   const [filterStatus, setFilterStatus] = useState('COMPLETED'); 
   
@@ -44,14 +47,18 @@ const AnalysisPage = () => {
       let newData = response.data || [];
 
       // ✅ FIX: Ensure every item has a unique key for React
-      // If your DB doesn't return 'id', we generate a temp one for the UI
       newData = newData.map((item, index) => ({
           ...item,
           _ui_key: item.id || item._id || `temp-${currentPage}-${index}`
       }));
 
       setData(newData);
-      setTotalPages(Math.ceil((response.total || 0) / 10));
+      
+      // ✅ CAPTURE TOTALS
+      // Assuming backend sends: { data: [...], total: 556, limit: 10, page: 1 }
+      const total = response.total || 0;
+      setTotalRecords(total); 
+      setTotalPages(Math.ceil(total / 10));
 
       // --- HANDLE POST-PAGE-LOAD NAVIGATION ---
       if (navigationQueue && newData.length > 0) {
@@ -78,10 +85,10 @@ const AnalysisPage = () => {
   const handleCaseClick = (clickedCase) => {
     if (!clickedCase) return;
     
-    // 1. Try strict object reference (Most reliable if data wasn't mutated)
+    // 1. Try strict object reference
     let index = data.indexOf(clickedCase);
 
-    // 2. If reference failed (e.g. strict mode or copies), try ID or UI Key
+    // 2. If reference failed, try ID or UI Key
     if (index === -1) {
         index = data.findIndex(c => 
             (c.id && c.id === clickedCase.id) || 
@@ -90,7 +97,7 @@ const AnalysisPage = () => {
         );
     }
 
-    // 3. Safety Net: If we STILL can't find it, assume it's index 0 so modal opens safely
+    // 3. Safety Net
     if (index === -1) {
         console.warn("Could not find index. Defaulting to 0.");
         index = 0; 
@@ -200,6 +207,10 @@ const AnalysisPage = () => {
           onDateFilter={null} 
           onExport={() => setShowExportModal(true)} 
           dataCount={data.length}
+          
+          // ✅ PASSING THE TOTAL COUNT HERE
+          totalCount={totalRecords} 
+          
           onRefresh={fetchData} 
         />
 
@@ -224,13 +235,11 @@ const AnalysisPage = () => {
           onNext={handleNextCase}
           onPrev={handlePrevCase}
           
-          // Navigation State Flags
           isFirstOnPage={selectedIndex === 0}
           isLastOnPage={selectedIndex === data.length - 1}
           hasPrevPage={currentPage > 1}
           hasNextPage={currentPage < totalPages}
 
-          // Force boolean logic to ensure buttons enable/disable correctly
           hasNext={(selectedIndex < data.length - 1) || (currentPage < totalPages)}
           hasPrev={(selectedIndex > 0) || (currentPage > 1)}
         />

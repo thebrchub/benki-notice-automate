@@ -1,12 +1,13 @@
 import React from 'react';
-import { Download, RefreshCw } from 'lucide-react'; // Added RefreshCw icon
+import { Download, RefreshCw } from 'lucide-react'; 
 
 const AnalysisHeader = ({ 
   filterStatus, 
   setFilterStatus, 
   onExport, 
-  dataCount,
-  onRefresh // New prop for refresh action
+  dataCount, // This is the count of items on the current page (e.g., 10)
+  totalCount, // ✅ NEW PROP: This is the total count from DB (e.g., 556)
+  onRefresh 
 }) => {
 
   return (
@@ -16,7 +17,18 @@ const AnalysisHeader = ({
       <div>
         <h3 className="text-lg font-bold text-slate-800 dark:text-white">Case Analysis</h3>
         <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
-           {dataCount} Records Found
+           {/* ✅ UPDATED LOGIC: Show Total vs Showing */}
+           {totalCount !== undefined && totalCount !== null ? (
+              <>
+                <span className="font-bold text-slate-700 dark:text-zinc-300">{totalCount}</span> Total Cases Found
+                {/* Only show "(Showing X)" if total is different from dataCount */}
+                {dataCount < totalCount && (
+                  <span className="opacity-70"> (Showing {dataCount})</span>
+                )}
+              </>
+           ) : (
+              `${dataCount} Records Found`
+           )}
         </p>
       </div>
       

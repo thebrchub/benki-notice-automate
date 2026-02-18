@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import StatusBadge from './StatusBadge';
-import ConfirmationModal from '../ConfirmationModal'; // Ensure this path matches your file structure
+import ConfirmationModal from '../ConfirmationModal'; 
 import { ChevronLeft, ChevronRight, RefreshCw, Loader2 } from 'lucide-react';
 import { caseService } from '../../services/caseService'; 
 
@@ -17,16 +17,40 @@ const AnalysisTable = ({
   const [refetchingId, setRefetchingId] = useState(null);
   const [loadingMsg, setLoadingMsg] = useState("Loading data...");
 
-  // --- UNIFIED MODAL STATE ---
+  // Local state to temporarily "freeze" rows that have been refetched
+  const [localStatusOverrides, setLocalStatusOverrides] = useState({});
+
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
-    mode: 'confirm', // 'confirm' (2 buttons) or 'alert' (1 button)
+    mode: 'confirm', 
     title: '',
     message: '',
     item: null
   });
 
-  // Smart Timer for slow networks
+  // --- ✅ NEW: SORTING LOGIC ---
+  // This ensures that any item present in 'localStatusOverrides' moves to the TOP of the list
+  const sortedData = useMemo(() => {
+    if (!data) return [];
+    
+    // Create a shallow copy to sort without mutating props
+    return [...data].sort((a, b) => {
+        const idA = a.id || a.order_link;
+        const idB = b.id || b.order_link;
+        
+        const isRefetchedA = !!localStatusOverrides[idA];
+        const isRefetchedB = !!localStatusOverrides[idB];
+
+        // If A is refetched and B is not, A comes first (-1)
+        if (isRefetchedA && !isRefetchedB) return -1;
+        // If B is refetched and A is not, B comes first (1)
+        if (!isRefetchedA && isRefetchedB) return 1;
+        // Otherwise keep original order
+        return 0;
+    });
+  }, [data, localStatusOverrides]);
+
+
   useEffect(() => {
     let timer;
     if (loading) {
@@ -38,7 +62,6 @@ const AnalysisTable = ({
     return () => clearTimeout(timer);
   }, [loading]);
 
-  // 1. OPEN CONFIRMATION MODAL
   const initiateRefetch = (e, item) => {
     e.stopPropagation(); 
     setModalConfig({
@@ -50,41 +73,38 @@ const AnalysisTable = ({
     });
   };
 
-  // 2. HANDLE MODAL ACTIONS (Confirm OR OK)
   const handleModalAction = async () => {
-    // If we are currently showing an Alert (Success/Error), clicking OK just closes it.
     if (modalConfig.mode === 'alert') {
       setModalConfig(prev => ({ ...prev, isOpen: false }));
       return;
     }
 
-    // --- LOGIC FOR CONFIRMATION ---
     const item = modalConfig.item;
     if (!item) return;
 
-    // 1. Set row loading state
-    setRefetchingId(item.id || item.order_link);
-    
-    // 2. Close the confirmation modal so user sees the row spinner
+    const itemId = item.id || item.order_link;
+    setRefetchingId(itemId);
     setModalConfig(prev => ({ ...prev, isOpen: false }));
 
     try {
         await caseService.refetchCase(item.order_link);
         
-        // 3. On Success: Open Modal in 'alert' mode
+        // Optimistic Update: Mark as PENDING locally
+        setLocalStatusOverrides(prev => ({
+            ...prev,
+            [itemId]: 'PENDING' 
+        }));
+
         setModalConfig({
           isOpen: true,
           mode: 'alert',
           title: 'Success',
-          message: 'Case queued for re-analysis successfully!',
-          item: null // Clear item to prevent re-triggering
+          message: 'Case queued for re-analysis! It has been moved to the top of the list.',
+          item: null 
         });
 
-        if (onRefresh) onRefresh(); 
     } catch (error) {
         console.error("Refetch failed", error);
-        
-        // On Error: Open Modal in 'alert' mode
         setModalConfig({
           isOpen: true,
           mode: 'alert',
@@ -125,78 +145,90 @@ const AnalysisTable = ({
                       </div>
                   </td>
                </tr>
-            ) : data.length > 0 ? (
-              data.map((item) => (
-                <tr key={item.id} onClick={() => onRowClick(item)} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-colors group cursor-pointer">
-                  
-                  <td className="px-6 py-4 whitespace-nowrap align-top">
+            ) : sortedData.length > 0 ? (
+              // ✅ CHANGED: Map over sortedData instead of data
+              sortedData.map((item) => {
+                const itemId = item.id || item.order_link;
+                const displayStatus = localStatusOverrides[itemId] || item.status;
+                const isRefetchedLocally = !!localStatusOverrides[itemId];
+
+                return (
+                  <tr key={itemId} onClick={() => onRowClick(item)} className={`transition-colors group cursor-pointer ${isRefetchedLocally ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'hover:bg-slate-50/50 dark:hover:bg-zinc-800/30'}`}>
+                    
+                    <td className="px-6 py-4 whitespace-nowrap align-top">
+                        <div className="flex flex-col">
+                           <span className="text-sm font-bold text-zinc-900 dark:text-white">{item.created_by}</span>
+                           <span className="text-xs text-zinc-400">{new Date(item.created_at).toLocaleDateString('en-GB')}</span>
+                        </div>
+                    </td>
+                    
+                    <td className="px-6 py-4 whitespace-nowrap align-top text-sm text-zinc-600 dark:text-zinc-300">
+                        {item.date_of_pronouncement}
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap align-top">
+                        <StatusBadge status={displayStatus} />
+                    </td>
+
+                    <td className="px-6 py-4 align-top">
                       <div className="flex flex-col">
-                         <span className="text-sm font-bold text-zinc-900 dark:text-white">{item.created_by}</span>
-                         <span className="text-xs text-zinc-400">{new Date(item.created_at).toLocaleDateString('en-GB')}</span>
+                        <span className="text-sm font-semibold text-slate-800 dark:text-zinc-200 font-mono bg-slate-100 dark:bg-zinc-800 px-2 py-1 rounded w-fit mb-1">
+                            {item.citation_number}
+                        </span>
+                        <span className="text-xs text-zinc-400">{item.bench_name}</span>
                       </div>
-                  </td>
-                  
-                  <td className="px-6 py-4 whitespace-nowrap align-top text-sm text-zinc-600 dark:text-zinc-300">
-                      {item.date_of_pronouncement}
-                  </td>
+                    </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap align-top">
-                      <StatusBadge status={item.status} />
-                  </td>
-
-                  <td className="px-6 py-4 align-top">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-slate-800 dark:text-zinc-200 font-mono bg-slate-100 dark:bg-zinc-800 px-2 py-1 rounded w-fit mb-1">
-                          {item.citation_number}
-                      </span>
-                      <span className="text-xs text-zinc-400">{item.bench_name}</span>
-                    </div>
-                  </td>
-
-                  <td className="px-6 py-4 align-top max-w-[200px]">
-                    <div className="flex flex-col gap-1">
-                        <span className="text-sm font-bold text-slate-700 dark:text-zinc-200 truncate">{item.appellant}</span>
-                        <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-600 uppercase tracking-wider">VS</span>
-                        <span className="text-sm text-slate-600 dark:text-zinc-400 truncate">{item.respondent}</span>
-                    </div>
-                  </td>
-
-                  <td className="px-6 py-4 align-top max-w-[150px]">
-                      <div className="flex flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
-                         <p className="truncate" title={item.judicial_member}><span className="font-bold">JM:</span> {item.judicial_member?.split(' ')[0]}..</p>
-                         <p className="truncate" title={item.accountant_member}><span className="font-bold">AM:</span> {item.accountant_member?.split(' ')[0]}..</p>
+                    <td className="px-6 py-4 align-top max-w-[200px]">
+                      <div className="flex flex-col gap-1">
+                          <span className="text-sm font-bold text-slate-700 dark:text-zinc-200 truncate">{item.appellant}</span>
+                          <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-600 uppercase tracking-wider">VS</span>
+                          <span className="text-sm text-slate-600 dark:text-zinc-400 truncate">{item.respondent}</span>
                       </div>
-                  </td>
+                    </td>
 
-                  <td className="px-6 py-4 align-top">
-                      <span className={`text-xs font-bold uppercase ${item.appeal_in_favor_of === 'Assessee' ? 'text-emerald-600' : 'text-zinc-500'}`}>
-                         {item.appeal_in_favor_of}
-                      </span>
-                  </td>
+                    <td className="px-6 py-4 align-top max-w-[150px]">
+                        <div className="flex flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
+                           <p className="truncate" title={item.judicial_member}><span className="font-bold">JM:</span> {item.judicial_member?.split(' ')[0]}..</p>
+                           <p className="truncate" title={item.accountant_member}><span className="font-bold">AM:</span> {item.accountant_member?.split(' ')[0]}..</p>
+                        </div>
+                    </td>
 
-                  <td className="px-6 py-4 align-top text-center">
-                    {/* ✅ UPDATED LOGIC: Show Refetch button for COMPLETED OR FAILED */}
-                    {(item.status === 'COMPLETED' || item.status === 'FAILED') && (
-                        <button
-                            onClick={(e) => initiateRefetch(e, item)}
-                            disabled={(refetchingId === item.id || refetchingId === item.order_link)}
-                            className={`p-2 rounded-lg transition-colors group/btn cursor-pointer ${
-                                item.status === 'FAILED' 
-                                ? 'text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20' 
-                                : 'text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
-                            }`}
-                            title={item.status === 'FAILED' ? "Retry Analysis" : "Refetch & Re-analyze"}
-                        >
-                            <RefreshCw 
-                                size={16} 
-                                className={(refetchingId === item.id || refetchingId === item.order_link) ? "animate-spin text-blue-500" : "group-hover/btn:rotate-180 transition-transform duration-500"} 
-                            />
-                        </button>
-                    )}
-                  </td>
+                    <td className="px-6 py-4 align-top">
+                        <span className={`text-xs font-bold uppercase ${item.appeal_in_favor_of === 'Assessee' ? 'text-emerald-600' : 'text-zinc-500'}`}>
+                           {item.appeal_in_favor_of}
+                        </span>
+                    </td>
 
-                </tr>
-              ))
+                    <td className="px-6 py-4 align-top text-center">
+                      {(item.status === 'COMPLETED' || item.status === 'FAILED') && !isRefetchedLocally && (
+                          <button
+                              onClick={(e) => initiateRefetch(e, item)}
+                              disabled={(refetchingId === itemId)}
+                              className={`p-2 rounded-lg transition-colors group/btn cursor-pointer ${
+                                  item.status === 'FAILED' 
+                                  ? 'text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20' 
+                                  : 'text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+                              }`}
+                              title={item.status === 'FAILED' ? "Retry Analysis" : "Refetch & Re-analyze"}
+                          >
+                              <RefreshCw 
+                                  size={16} 
+                                  className={(refetchingId === itemId) ? "animate-spin text-blue-500" : "group-hover/btn:rotate-180 transition-transform duration-500"} 
+                              />
+                          </button>
+                      )}
+                      
+                      {isRefetchedLocally && (
+                          <span className="text-xs font-bold text-amber-500 animate-pulse">
+                              Processing..
+                          </span>
+                      )}
+                    </td>
+
+                  </tr>
+                );
+              })
             ) : (
               <tr><td colSpan="8" className="text-center py-12 text-slate-400 dark:text-zinc-600">No cases found.</td></tr>
             )}
@@ -204,7 +236,7 @@ const AnalysisTable = ({
         </table>
       </div>
 
-      {/* Footer */}
+      {/* Footer (No changes needed) */}
       <div className="flex justify-between items-center px-6 py-4 border-t border-slate-100 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/30">
         <span className="text-xs font-medium text-slate-500 dark:text-zinc-500">Page {currentPage} of {totalPages}</span>
         <div className="flex items-center gap-2">
@@ -217,7 +249,6 @@ const AnalysisTable = ({
         </div>
       </div>
 
-      {/* ✅ ONE MODAL TO RULE THEM ALL */}
       <ConfirmationModal
         isOpen={modalConfig.isOpen}
         onClose={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
