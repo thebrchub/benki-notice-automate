@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, RefreshCw } from 'lucide-react'; 
+import { Download, Loader2, RefreshCw } from 'lucide-react'; 
 
 const AnalysisHeader = ({ 
   filterStatus, 
@@ -7,7 +7,9 @@ const AnalysisHeader = ({
   onExport, 
   dataCount, // This is the count of items on the current page (e.g., 10)
   totalCount, // ✅ NEW PROP: This is the total count from DB (e.g., 556)
-  onRefresh 
+  onRefresh,
+  onBulkRetry,
+  isBulkRetrying = false
 }) => {
 
   return (
@@ -60,6 +62,22 @@ const AnalysisHeader = ({
           >
             <RefreshCw size={16} className="group-hover:rotate-180 transition-transform duration-500" />
           </button>
+
+          {filterStatus === 'FAILED' && onBulkRetry && (
+            <button
+              onClick={onBulkRetry}
+              disabled={isBulkRetrying || !totalCount}
+              className="flex items-center gap-2 bg-white dark:bg-zinc-800 border border-red-200 dark:border-red-900/60 text-red-600 dark:text-red-400 px-4 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-sm font-medium shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              title="Retry all failed cases"
+            >
+              {isBulkRetrying ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <RefreshCw size={16} className="text-red-500" />
+              )}
+              Retry All Failed{totalCount ? ` (${totalCount})` : ''}
+            </button>
+          )}
 
           {/* Export Button */}
           <button onClick={onExport} className="flex items-center gap-2 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-700 dark:text-zinc-300 px-4 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-zinc-700 transition-all text-sm font-medium shadow-sm">

@@ -33,6 +33,7 @@ const AnalysisPage = () => {
   const [showExportModal, setShowExportModal] = useState(false);
   const [exportDates, setExportDates] = useState({ start: '', end: '' });
   const [isExporting, setIsExporting] = useState(false);
+  const [isBulkRetrying, setIsBulkRetrying] = useState(false);
 
   // --- DATA FETCHING ---
   useEffect(() => {
@@ -197,6 +198,60 @@ const AnalysisPage = () => {
     }
   };
 
+  const handleBulkRetryFailed = async () => {
+    if (isBulkRetrying || filterStatus !== 'FAILED') return;
+
+    const shouldRetry = window.confirm(
+      `Retry all failed cases? This will queue every failed case again for analysis.`
+    );
+
+    if (!shouldRetry) return;
+
+    setIsBulkRetrying(true);
+
+    try {
+      const fetchLimit = Math.max(totalRecords, 1000);
+      const response = await caseService.getCases('FAILED', 1, fetchLimit);
+      const failedCases = (response.data || []).filter(item => item.order_link);
+
+      if (failedCases.length === 0) {
+        alert('No failed cases were found to retry.');
+        return;
+      }
+
+      let successCount = 0;
+      let failCount = 0;
+      const batchSize = 10;
+
+      for (let index = 0; index < failedCases.length; index += batchSize) {
+        const batch = failedCases.slice(index, index + batchSize);
+        const results = await Promise.allSettled(
+          batch.map(item => caseService.refetchCase(item.order_link))
+        );
+
+        results.forEach(result => {
+          if (result.status === 'fulfilled') {
+            successCount += 1;
+          } else {
+            failCount += 1;
+          }
+        });
+      }
+
+      await fetchData();
+
+      alert(
+        `Queued ${successCount} failed case${successCount === 1 ? '' : 's'} for re-analysis.` +
+        (failCount > 0 ? ` ${failCount} case${failCount === 1 ? '' : 's'} could not be queued.` : '')
+      );
+    } catch (error) {
+      console.error('Bulk retry failed', error);
+      alert('Failed to retry all failed cases. Please try again.');
+    } finally {
+      setIsBulkRetrying(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-500">
       
@@ -212,6 +267,8 @@ const AnalysisPage = () => {
           totalCount={totalRecords} 
           
           onRefresh={fetchData} 
+          onBulkRetry={handleBulkRetryFailed}
+          isBulkRetrying={isBulkRetrying}
         />
 
         <AnalysisTable 
